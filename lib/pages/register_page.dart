@@ -1,9 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:collegeapp/components/my_button.dart';
 import 'package:collegeapp/components/my_textfield.dart';
-import 'package:collegeapp/components/square_tile.dart';
-import 'package:collegeapp/Services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collegeapp/pages/student_home_page.dart';
+import 'package:collegeapp/pages/teacher_home_page.dart';
+import 'package:collegeapp/pages/admin_home_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final Function()? onTap;
@@ -14,82 +16,120 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // text editing controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final List<String> roles = ["Student", "Teacher", "Admin"];
+  String? selectedRole;
+  bool _isWorking = false;
 
-  // sign user in method
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   void signUserUp() async {
-    // show loading circle
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
+    if (_isWorking) return;
 
-    // try registering u
+    setState(() {
+      _isWorking = true;
+    });
+
+    // Show loading dialog
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
     try {
-      //Ceck if the passwords are same
-
-      if (passwordController.text == confirmPasswordController.text) {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text,
-        );
-      } else {
-        showErrorMessage();
+      // Validate passwords
+      if (passwordController.text != confirmPasswordController.text) {
+        if (mounted) {
+          Navigator.pop(context); // Close loading dialog
+          _showErrorMessage('Passwords do not match.');
+        }
+        return;
       }
-      // pop the loading circle
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context);
-    } on FirebaseAuthException {
-      // pop the loading circle
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context);
-      //show error message
-      //showErrorMessage();
+
+      // Validate role selection
+      if (selectedRole == null) {
+        if (mounted) {
+          Navigator.pop(context); // Close loading dialog
+          _showErrorMessage('Please select a role.');
+        }
+        return;
+      }
+
+      // Create user in Firebase Auth
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      // Save user details to Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': emailController.text.trim(),
+        'role': selectedRole,
+        'uid': userCredential.user!.uid,
+      });
+
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Navigate based on the selected role
+      if (mounted) {
+        if (selectedRole == 'Student') {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => StudentHomePage()));
+        } else if (selectedRole == 'Teacher') {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const TeacherHomePage()));
+        } else if (selectedRole == 'Admin') {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const AdminHomePage()));
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle errors
+      if (mounted) {
+        Navigator.pop(context); // Close loading dialog
+        _showErrorMessage(e.message ?? 'An error occurred. Please try again.');
+      }
+    } finally {
+      // Reset working state
+      if (mounted) {
+        setState(() {
+          _isWorking = false;
+        });
+      }
     }
   }
 
-  // error message to the user
-  void showErrorMessage() {
+  void _showErrorMessage(String message) {
     showDialog(
       context: context,
       builder: (context) {
-        return const AlertDialog(
+        return AlertDialog(
           backgroundColor: Colors.deepPurple,
           title: Center(
-            child: Text(
-              'Your Email or Password is wrong',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: Text(message, style: const TextStyle(color: Colors.white)),
           ),
         );
       },
     );
   }
-
-  // wrong password message popup
-  /*void wrongPasswordMessage() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const AlertDialog(
-          backgroundColor: Colors.deepPurple,
-          title: Center(
-            child: Text(
-              'Incorrect Password',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        );
-      },
-    );
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -102,134 +142,65 @@ class _RegisterPageState extends State<RegisterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 50),
-
-                // logo
-                const Icon(
-                  Icons.lock,
-                  size: 100,
-                ),
-
+                const Icon(Icons.school, size: 100),
                 const SizedBox(height: 50),
-
-                // LET'S CREATE AN ACCOUNT FOR YOU
                 Text(
                   'Let\'s create an account for you!',
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
                 ),
-
                 const SizedBox(height: 25),
-
-                // email textfield
                 MyTextField(
                   controller: emailController,
                   hintText: 'Email',
                   obscureText: false,
                 ),
-
                 const SizedBox(height: 10),
-
-                // password textfield
                 MyTextField(
                   controller: passwordController,
                   hintText: 'Password',
                   obscureText: true,
                 ),
-
                 const SizedBox(height: 10),
-
-                // confirm password textfield
                 MyTextField(
                   controller: confirmPasswordController,
                   hintText: 'Confirm Password',
                   obscureText: true,
                 ),
-
                 const SizedBox(height: 10),
-
-                // sign in button
-                MyButton(
-                  text: "Sign Up",
-                  onTap: signUserUp,
+                DropdownButton<String>(
+                  value: selectedRole,
+                  hint: const Text('Select Role'),
+                  items: roles.map((String role) {
+                    return DropdownMenuItem<String>(
+                      value: role,
+                      child: Text(role),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedRole = value;
+                    });
+                  },
                 ),
-
-                const SizedBox(height: 20),
-
-                // or continue with
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          thickness: 0.5,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text(
-                          'Or continue with',
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          thickness: 0.5,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // google + apple sign in buttons
+                const SizedBox(height: 25),
+                MyButton(text: "Sign Up", onTap: signUserUp),
+                const SizedBox(height: 50),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // google button
-                    SquareTile(
-                      onTap: () => AuthService().signInWithGoogle(),
-                      imagePath: 'lib/images/google.png',
-                    ),
-
-                    const SizedBox(width: 25),
-
-                    // apple button
-                    SquareTile(
-                      imagePath: 'lib/images/apple.png',
-                      onTap: () {},
-                    )
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // not a member? register now
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Already have an account?',
-                      style: TextStyle(color: Colors.grey[700]),
-                    ),
+                    Text('Already a member?',
+                        style: TextStyle(color: Colors.grey[700])),
                     const SizedBox(width: 4),
                     GestureDetector(
                       onTap: widget.onTap,
                       child: const Text(
                         'Login now',
                         style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            color: Colors.blue, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),

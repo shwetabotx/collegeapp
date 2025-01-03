@@ -42,7 +42,9 @@ dependencies:
   google_sign_in: ^6.2.2
   flutter_launcher_icons: ^0.14.2
   http: ^1.2.2
-  flutter_stripe: ^11.3.0
+  fluttertoast: ^8.2.10
+  
+  
   
 
 dev_dependencies:

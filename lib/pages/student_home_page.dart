@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
+import 'razorpay_payment.dart';
 
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
@@ -135,6 +136,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       Colors.purple.shade200
                     ],
                     onTap: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RazorpayPage()));
                       // Navigate to Fees page
                     },
                   ),

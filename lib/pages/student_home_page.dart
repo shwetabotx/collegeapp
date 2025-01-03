@@ -128,7 +128,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     },
                   ),
                   _buildFeatureCard(
-                    icon: Icons.attach_money,
+                    icon: Icons.currency_rupee,
                     title: 'Fees',
                     gradientColors: [
                       Colors.deepPurple.shade600,

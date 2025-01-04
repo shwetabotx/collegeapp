@@ -74,7 +74,7 @@ class _RazorpayPageState extends State<RazorpayPage> {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       appBar: AppBar(
-        title: const Text("Payment Page"),
+        title: const Text("Fees Payment"),
         backgroundColor: Colors.green,
         centerTitle: true,
         leading: IconButton(

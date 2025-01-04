@@ -1,3 +1,4 @@
+import 'package:collegeapp/pages/student_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -16,11 +17,11 @@ class _RazorpayPageState extends State<RazorpayPage> {
   void openCheckout(int amount) async {
     amount = amount * 100; // Convert to paise
     var options = {
-      'key': 'rzp_test_1DP5mn0lfG5ag', // Replace with your Razorpay key
+      'key': 'rzp_test_9XbJPu0vOzevBn', // Replace with your Razorpay key
       'amount': amount,
       'name': 'College App',
       'description': 'Payment for the college app',
-      'prefill': {'contact': '1234567890', 'email': 'test@gmail.com'},
+      'prefill': {'contact': '0000000000', 'email': 'test@razorpay.com'},
       'external': {
         'wallets': ['paytm']
       }
@@ -34,20 +35,23 @@ class _RazorpayPageState extends State<RazorpayPage> {
 
   void handlePaymentSuccess(PaymentSuccessResponse response) {
     Fluttertoast.showToast(
-        msg: "Payment successful: ${response.paymentId}",
-        toastLength: Toast.LENGTH_SHORT);
+      msg: "Payment successful: ${response.paymentId}",
+      toastLength: Toast.LENGTH_SHORT,
+    );
   }
 
   void handlePaymentError(PaymentFailureResponse response) {
     Fluttertoast.showToast(
-        msg: "Payment failed: ${response.message ?? 'Unknown error'}",
-        toastLength: Toast.LENGTH_SHORT);
+      msg: "Payment failed: ${response.message ?? 'Unknown error'}",
+      toastLength: Toast.LENGTH_SHORT,
+    );
   }
 
   void handleExternalWallet(ExternalWalletResponse response) {
     Fluttertoast.showToast(
-        msg: "External Wallet: ${response.walletName}",
-        toastLength: Toast.LENGTH_SHORT);
+      msg: "External Wallet: ${response.walletName}",
+      toastLength: Toast.LENGTH_SHORT,
+    );
   }
 
   @override
@@ -68,53 +72,70 @@ class _RazorpayPageState extends State<RazorpayPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[800],
-      body: SingleChildScrollView(
+      backgroundColor: Colors.grey[900],
+      appBar: AppBar(
+        title: const Text("Payment Page"),
+        backgroundColor: Colors.green,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            // Logout logic
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => StudentHomePage()),
+              );
+            });
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 10),
+            const SizedBox(height: 30),
             const Text(
-              "Welcome to College App Payment",
+              "Make Your Payment",
               style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18),
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                cursorColor: Colors.white,
-                autofocus: false,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: 'Enter amount to be paid',
-                  labelStyle: TextStyle(fontSize: 15.0, color: Colors.white),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 1.0,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 1.0,
-                    ),
-                  ),
-                  errorStyle: TextStyle(color: Colors.redAccent, fontSize: 15),
-                ),
-                controller: amtController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter amount to be paid';
-                  }
-                  return null;
-                },
+            const SizedBox(height: 20),
+            const Text(
+              "Enter the amount you wish to pay:",
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
               ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
+            TextFormField(
+              cursorColor: Colors.white,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Amount (in ₹)',
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: Colors.grey[800],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Colors.white),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Colors.green, width: 2),
+                ),
+              ),
+              controller: amtController,
+            ),
+            const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
                 if (amtController.text.isNotEmpty) {
@@ -123,20 +144,34 @@ class _RazorpayPageState extends State<RazorpayPage> {
                     openCheckout(amount);
                   } catch (e) {
                     Fluttertoast.showToast(
-                        msg: "Invalid amount entered",
-                        toastLength: Toast.LENGTH_SHORT);
+                      msg: "Invalid amount entered",
+                      toastLength: Toast.LENGTH_SHORT,
+                    );
                   }
                 } else {
                   Fluttertoast.showToast(
-                      msg: "Please enter an amount",
-                      toastLength: Toast.LENGTH_SHORT);
+                    msg: "Please enter an amount",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('Make Payment'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
+              child: const Text(
+                "Proceed to Pay",
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "Powered by Razorpay",
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

@@ -1,249 +1,276 @@
+import 'attendance/major_selection_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 
-class TeacherHomePage extends StatefulWidget {
+class TeacherHomePage extends StatelessWidget {
   const TeacherHomePage({super.key});
 
   @override
-  State<TeacherHomePage> createState() => _TeacherHomePageState();
-}
-
-class _TeacherHomePageState extends State<TeacherHomePage> {
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
       appBar: AppBar(
-        title: Text("Teacher Dashboard"),
-        backgroundColor: Colors.deepPurpleAccent,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple, Colors.purpleAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+        title: const Text("Teacher Dashboard"),
+        backgroundColor: Colors.green,
+        centerTitle: true,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
           ),
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.notifications),
             onPressed: () {
-              // Logout logic
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              });
+              // Navigate to notifications page
             },
-            icon: Icon(Icons.logout),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Navigate to settings page
+            },
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            // Hero Section with a profile icon
-            Stack(
-              children: [
-                Container(
-                  height: 250,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.deepPurple, Colors.purpleAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    image: DecorationImage(
-                      image: AssetImage(
-                          'assets/student_background.jpg'), // Add your image
-                      fit: BoxFit.cover,
-                    ),
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.green),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundImage:
+                        AssetImage('assets/profile_placeholder.png'),
                   ),
-                ),
-                Positioned(
-                  top: 150,
-                  left: 20,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage(
-                        'assets/profile_picture.jpg'), // Add profile picture
+                  SizedBox(height: 10),
+                  Text(
+                    "Teacher Name",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
-                ),
-                Positioned(
-                  top: 150,
-                  left: 100,
-                  child: Text(
-                    'Welcome, Teacher!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-
-            // Feature cards in GridView
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GridView.count(
-                shrinkWrap:
-                    true, // So it doesn't take up more space than necessary
-                physics: NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildFeatureCard(
-                    icon: Icons.directions_bus,
-                    title: 'Bus Tracking',
-                    gradientColors: [
-                      Colors.deepPurple.shade400,
-                      Colors.purpleAccent
-                    ],
-                    onTap: () {
-                      // Navigate to Bus Tracking page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.access_alarm,
-                    title: 'Attendance',
-                    gradientColors: [
-                      Colors.purpleAccent,
-                      Colors.deepPurple.shade300
-                    ],
-                    onTap: () {
-                      // Navigate to Attendance page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.announcement,
-                    title: 'Announcements',
-                    gradientColors: [Colors.deepPurple.shade500, Colors.purple],
-                    onTap: () {
-                      // Navigate to Announcements page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.attach_money,
-                    title: 'Fees',
-                    gradientColors: [
-                      Colors.deepPurple.shade600,
-                      Colors.purple.shade200
-                    ],
-                    onTap: () {
-                      // Navigate to Fees page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.forum,
-                    title: 'Student Discussion',
-                    gradientColors: [
-                      Colors.deepPurple.shade700,
-                      Colors.purpleAccent
-                    ],
-                    onTap: () {
-                      // Navigate to Discussion page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.link,
-                    title: 'Important Links',
-                    gradientColors: [
-                      Colors.deepPurple.shade800,
-                      Colors.purple.shade400
-                    ],
-                    onTap: () {
-                      // Navigate to Important Links page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.assignment,
-                    title: 'Assignments',
-                    gradientColors: [
-                      Colors.deepPurple.shade900,
-                      Colors.purple.shade500
-                    ],
-                    onTap: () {
-                      // Navigate to Assignments page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.grade,
-                    title: 'Test Results',
-                    gradientColors: [
-                      Colors.purpleAccent,
-                      Colors.deepPurple.shade400
-                    ],
-                    onTap: () {
-                      // Navigate to Test Results page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.show_chart,
-                    title: 'Growth Tracking',
-                    gradientColors: [Colors.deepPurple.shade300, Colors.purple],
-                    onTap: () {
-                      // Navigate to Growth Tracking page
-                    },
+                  Text(
+                    "Mathematics Department",
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text("Home"),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text("My Profile"),
+              onTap: () {
+                // Navigate to profile page
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text("Notifications"),
+              onTap: () {
+                // Navigate to notifications page
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.help),
+              title: const Text("Help & Support"),
+              onTap: () {
+                // Navigate to help page
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text("Logout"),
+              onTap: () {
+                // Logout logic
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+                // Logout logic here
+              },
+            ),
+          ],
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              "Dashboard Overview",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Horizontal scrolling for the Dashboard cards
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildDashboardCard(
+                      "Total Classes", "5", Icons.class_, context),
+                  _buildDashboardCard(
+                      "Total Students", "120", Icons.group, context),
+                  _buildDashboardCard(
+                      "Pending Tasks", "3", Icons.pending_actions, context),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "Features",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 16),
+            GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _buildFeatureCard(
+                    "Manage Classes", Icons.class_, Colors.blue, context),
+                _buildFeatureCard("Mark Attendance", Icons.check_circle,
+                    Colors.orange, context),
+                _buildFeatureCard("Assign Homework", Icons.assignment,
+                    Colors.purple, context),
+                _buildFeatureCard(
+                    "Grade Assignments", Icons.grade, Colors.red, context),
+                _buildFeatureCard("Upload Resources", Icons.upload_file,
+                    Colors.teal, context),
+                _buildFeatureCard(
+                    "Messages", Icons.message, Colors.cyan, context),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: const Text(
+                "Powered by College App",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Action for quick add (e.g., create new assignment or announcement)
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-    required List<Color> gradientColors,
-    required VoidCallback onTap,
-  }) {
+  // Dashboard Card with onTap method
+  Widget _buildDashboardCard(
+      String title, String value, IconData icon, BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        // Add your desired action for the dashboard card tap
+        // Example: Navigate to a detailed view page or show a dialog
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Tapped on $title')));
+      },
       child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+        color: Colors.green.shade100,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32, color: Colors.green),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      ),
+    );
+  }
+
+  // Feature Card with onTap method
+  Widget _buildFeatureCard(
+      String title, IconData icon, Color color, BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // Perform an action based on the feature card tapped
+        // Example: Navigate to the respective feature's page
+        if (title == "Manage Classes") {
+          // Navigate to Manage Classes page
+
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Tapped on Manage Classes')));
+        } else if (title == "Mark Attendance") {
+          // Navigate to Mark Attendance page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MajorSelectionPage()),
+          );
+        } else if (title == "Assign Homework") {
+          // Navigate to Assign Homework page
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Tapped on Assign Homework')));
+        } else if (title == "Grade Assignments") {
+          // Navigate to Grade Assignments page
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Tapped on Grade Assignments')));
+        } else if (title == "Upload Resources") {
+          // Navigate to Upload Resources page
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Tapped on Upload Resources')));
+        } else if (title == "Messages") {
+          // Navigate to Messages page
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Tapped on Messages')));
+        }
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: color),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 50,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ),
       ),
     );

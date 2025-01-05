@@ -1,7 +1,7 @@
+import 'package:collegeapp/pages/admin/add_delete.dart';
 import 'package:collegeapp/pages/login_page.dart';
-import 'package:collegeapp/pages/manage_roles_page.dart';
+import 'package:collegeapp/pages/admin/view_roles_page.dart';
 import 'package:flutter/material.dart';
-import 'add_delete_users.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
@@ -65,7 +65,7 @@ class AdminHomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const AddDeleteUsersPage(),
+                          builder: (context) => const AddDeletePage(),
                         ),
                       );
                     },
@@ -73,12 +73,12 @@ class AdminHomePage extends StatelessWidget {
                   // Manage Roles Card
                   _buildFeatureCard(
                     icon: Icons.manage_accounts,
-                    title: 'Manage Roles',
+                    title: 'View Roles',
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ManageRolesPage(),
+                          builder: (context) => const ViewRolesPage(),
                         ),
                       );
                     },

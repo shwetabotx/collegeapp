@@ -1,73 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AddDeleteUsersPage extends StatefulWidget {
-  const AddDeleteUsersPage({super.key});
+class AddDeleteTeachersPage extends StatefulWidget {
+  const AddDeleteTeachersPage({super.key});
 
   @override
-  State<AddDeleteUsersPage> createState() => _AddDeleteUsersPageState();
+  State<AddDeleteTeachersPage> createState() => _AddDeleteTeachersPageState();
 }
 
-class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
-  // Controllers for adding a user
-  final addUsernameController = TextEditingController();
-  final addPasswordController = TextEditingController();
-  final addRoleController = TextEditingController();
+class _AddDeleteTeachersPageState extends State<AddDeleteTeachersPage> {
+  // Controllers for adding teachers
+  final teacherNameController = TextEditingController();
+  final teacherPasswordController = TextEditingController();
+  final teacherSubjectController = TextEditingController();
 
-  // Controller for deleting a user
-  final deleteUsernameController = TextEditingController();
+  // Controller for deleting teacher by username
+  final deleteTeacherUsernameController = TextEditingController();
 
-  // Add User to Firestore
-  void addUserToDatabase() async {
-    if (addUsernameController.text.isEmpty ||
-        addPasswordController.text.isEmpty ||
-        addRoleController.text.isEmpty) {
-      showErrorMessage('All fields are required to add a user');
+  // Add Teacher to Firestore
+  void addTeacherToDatabase() async {
+    if (teacherNameController.text.isEmpty ||
+        teacherPasswordController.text.isEmpty ||
+        teacherSubjectController.text.isEmpty) {
+      showErrorMessage('All fields are required to add a teacher');
       return;
     }
 
     try {
       await FirebaseFirestore.instance.collection('users').add({
-        'username': addUsernameController.text.trim(),
-        'password': addPasswordController.text.trim(),
-        'role': addRoleController.text.trim(),
+        'username': teacherNameController.text.trim(),
+        'password': teacherPasswordController.text.trim(),
+        'role': 'Teacher',
+        'subject': teacherSubjectController.text.trim(),
       });
 
-      showSuccessMessage('User added successfully');
-      addUsernameController.clear();
-      addPasswordController.clear();
-      addRoleController.clear();
+      showSuccessMessage('Teacher added successfully');
+      teacherNameController.clear();
+      teacherPasswordController.clear();
+      teacherSubjectController.clear();
     } catch (e) {
-      showErrorMessage('Failed to add user: $e');
+      showErrorMessage('Failed to add teacher: $e');
     }
   }
 
-  // Delete User from Firestore
-  void deleteUserFromDatabase() async {
-    if (deleteUsernameController.text.isEmpty) {
-      showErrorMessage('Username is required to delete a user');
+  // Delete Teacher from Firestore by username
+  void deleteTeacherFromDatabase() async {
+    if (deleteTeacherUsernameController.text.isEmpty) {
+      showErrorMessage('Username is required to delete a teacher');
       return;
     }
 
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      QuerySnapshot teacherDocs = await FirebaseFirestore.instance
           .collection('users')
-          .where('username', isEqualTo: deleteUsernameController.text.trim())
+          .where('username',
+              isEqualTo: deleteTeacherUsernameController.text.trim())
+          .where('role', isEqualTo: 'Teacher')
           .get();
 
-      if (querySnapshot.docs.isEmpty) {
-        showErrorMessage('No user found with the given username');
+      if (teacherDocs.docs.isEmpty) {
+        showErrorMessage('No teacher found with the given username');
         return;
       }
 
-      for (var doc in querySnapshot.docs) {
-        await doc.reference.delete();
+      for (var teacherDoc in teacherDocs.docs) {
+        await teacherDoc.reference.delete();
       }
 
-      showSuccessMessage('User deleted successfully');
-      deleteUsernameController.clear();
+      showSuccessMessage('Teacher deleted successfully');
+      deleteTeacherUsernameController.clear();
     } catch (e) {
-      showErrorMessage('Failed to delete user: $e');
+      showErrorMessage('Failed to delete teacher: $e');
     }
   }
 
@@ -111,7 +114,7 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Panel'),
+        title: const Text('Manage Teachers'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -119,7 +122,7 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Add User Section
+            // Add Teacher Section
             Card(
               elevation: 4,
               margin: const EdgeInsets.only(bottom: 16.0),
@@ -129,7 +132,7 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Add User',
+                      'Add Teacher',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -137,15 +140,15 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
                     ),
                     const SizedBox(height: 16),
                     TextField(
-                      controller: addUsernameController,
+                      controller: teacherNameController,
                       decoration: const InputDecoration(
-                        labelText: 'Username',
+                        labelText: 'Teacher Name',
                         border: OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextField(
-                      controller: addPasswordController,
+                      controller: teacherPasswordController,
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: 'Password',
@@ -154,23 +157,23 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
                     ),
                     const SizedBox(height: 10),
                     TextField(
-                      controller: addRoleController,
+                      controller: teacherSubjectController,
                       decoration: const InputDecoration(
-                        labelText: 'Role (e.g., Student, Teacher, Admin)',
+                        labelText: 'Subject',
                         border: OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
-                      onPressed: addUserToDatabase,
+                      onPressed: addTeacherToDatabase,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add User'),
+                      label: const Text('Add Teacher'),
                     ),
                   ],
                 ),
               ),
             ),
-            // Delete User Section
+            // Delete Teacher Section
             Card(
               elevation: 4,
               child: Padding(
@@ -179,7 +182,7 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Delete User',
+                      'Delete Teacher',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -187,7 +190,7 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
                     ),
                     const SizedBox(height: 16),
                     TextField(
-                      controller: deleteUsernameController,
+                      controller: deleteTeacherUsernameController,
                       decoration: const InputDecoration(
                         labelText: 'Username to Delete',
                         border: OutlineInputBorder(),
@@ -195,9 +198,9 @@ class _AddDeleteUsersPageState extends State<AddDeleteUsersPage> {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
-                      onPressed: deleteUserFromDatabase,
+                      onPressed: deleteTeacherFromDatabase,
                       icon: const Icon(Icons.delete),
-                      label: const Text('Delete User'),
+                      label: const Text('Delete Teacher'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                       ),

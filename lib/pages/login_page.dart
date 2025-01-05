@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/student_home_page.dart';
 import 'package:collegeapp/pages/teacher_home_page.dart';
-import 'package:collegeapp/pages/admin_home_page.dart';
+import 'package:collegeapp/pages/admin/admin_home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

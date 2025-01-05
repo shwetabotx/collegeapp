@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
-import 'razorpay_payment.dart';
+import 'student/razorpay_payment.dart';
 
 class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
@@ -13,12 +13,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
       appBar: AppBar(
-        title: Text("Student Dashboard"),
-        backgroundColor: Colors.deepPurpleAccent,
+        title: const Text("Student Dashboard"),
+        backgroundColor: Colors.deepPurple,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.deepPurple, Colors.purpleAccent],
               begin: Alignment.topLeft,
@@ -26,229 +25,190 @@ class _StudentHomePageState extends State<StudentHomePage> {
             ),
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Logout logic
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              });
-            },
-            icon: Icon(Icons.logout),
-          ),
-        ],
+        leading: IconButton(
+          onPressed: () {
+            // Logout logic
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          },
+          icon: const Icon(Icons.logout),
+        ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Hero Section with a profile icon
-            Stack(
-              children: [
-                Container(
-                  height: 250,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.deepPurple, Colors.purpleAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    image: DecorationImage(
-                      image: AssetImage(
-                          'assets/student_background.jpg'), // Add your image
-                      fit: BoxFit.cover,
-                    ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome Banner
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.deepPurple, Colors.purpleAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                Positioned(
-                  top: 150,
-                  left: 20,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: AssetImage(
-                        'assets/profile_picture.jpg'), // Add profile picture
-                  ),
-                ),
-                Positioned(
-                  top: 150,
-                  left: 100,
-                  child: Text(
-                    'Welcome, Student!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                child: Column(
+                  children: [
+                    const CircleAvatar(
+                      radius: 40,
+                      backgroundImage: AssetImage(
+                          'assets/profile_picture.jpg'), // Add profile picture
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Welcome, Student!",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Explore your dashboard for updates and resources.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Features Section
+              ...[
+                _buildFeatureTile(
+                  title: "Bus Tracking",
+                  subtitle: "Track your bus in real time",
+                  icon: Icons.directions_bus,
+                  color: Colors.deepPurple.shade300,
+                  onTap: () {
+                    // Navigate to Bus Tracking
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Attendance",
+                  subtitle: "Check your attendance records",
+                  icon: Icons.access_alarm,
+                  color: Colors.purple.shade400,
+                  onTap: () {
+                    // Navigate to Attendance
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Announcements",
+                  subtitle: "View important updates",
+                  icon: Icons.announcement,
+                  color: Colors.purpleAccent,
+                  onTap: () {
+                    // Navigate to Announcements
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Fees",
+                  subtitle: "Pay your college fees",
+                  icon: Icons.currency_rupee,
+                  color: Colors.deepPurple.shade400,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RazorpayPage()),
+                    );
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Student Discussion",
+                  subtitle: "Collaborate with peers",
+                  icon: Icons.forum,
+                  color: Colors.deepPurple.shade600,
+                  onTap: () {
+                    // Navigate to Student Discussion
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Important Links",
+                  subtitle: "Access useful resources",
+                  icon: Icons.link,
+                  color: Colors.purple.shade300,
+                  onTap: () {
+                    // Navigate to Important Links
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Assignments",
+                  subtitle: "Track your assignments",
+                  icon: Icons.assignment,
+                  color: Colors.deepPurple.shade800,
+                  onTap: () {
+                    // Navigate to Assignments
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Test Results",
+                  subtitle: "View your academic progress",
+                  icon: Icons.grade,
+                  color: Colors.purpleAccent.shade700,
+                  onTap: () {
+                    // Navigate to Test Results
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Growth Tracking",
+                  subtitle: "Monitor your growth",
+                  icon: Icons.show_chart,
+                  color: Colors.deepPurple.shade400,
+                  onTap: () {
+                    // Navigate to Growth Tracking
+                  },
                 ),
               ],
-            ),
-            SizedBox(height: 20),
-
-            // Feature cards in GridView
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GridView.count(
-                shrinkWrap:
-                    true, // So it doesn't take up more space than necessary
-                physics: NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildFeatureCard(
-                    icon: Icons.directions_bus,
-                    title: 'Bus Tracking',
-                    gradientColors: [
-                      Colors.deepPurple.shade400,
-                      Colors.purpleAccent
-                    ],
-                    onTap: () {
-                      // Navigate to Bus Tracking page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.access_alarm,
-                    title: 'Attendance',
-                    gradientColors: [
-                      Colors.purpleAccent,
-                      Colors.deepPurple.shade300
-                    ],
-                    onTap: () {
-                      // Navigate to Attendance page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.announcement,
-                    title: 'Announcements',
-                    gradientColors: [Colors.deepPurple.shade500, Colors.purple],
-                    onTap: () {
-                      // Navigate to Announcements page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.currency_rupee,
-                    title: 'Fees',
-                    gradientColors: [
-                      Colors.deepPurple.shade600,
-                      Colors.purple.shade200
-                    ],
-                    onTap: () {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => RazorpayPage()));
-                      // Navigate to Fees page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.forum,
-                    title: 'Student Discussion',
-                    gradientColors: [
-                      Colors.deepPurple.shade700,
-                      Colors.purpleAccent
-                    ],
-                    onTap: () {
-                      // Navigate to Discussion page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.link,
-                    title: 'Important Links',
-                    gradientColors: [
-                      Colors.deepPurple.shade800,
-                      Colors.purple.shade400
-                    ],
-                    onTap: () {
-                      // Navigate to Important Links page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.assignment,
-                    title: 'Assignments',
-                    gradientColors: [
-                      Colors.deepPurple.shade900,
-                      Colors.purple.shade500
-                    ],
-                    onTap: () {
-                      // Navigate to Assignments page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.grade,
-                    title: 'Test Results',
-                    gradientColors: [
-                      Colors.purpleAccent,
-                      Colors.deepPurple.shade400
-                    ],
-                    onTap: () {
-                      // Navigate to Test Results page
-                    },
-                  ),
-                  _buildFeatureCard(
-                    icon: Icons.show_chart,
-                    title: 'Growth Tracking',
-                    gradientColors: [Colors.deepPurple.shade300, Colors.purple],
-                    onTap: () {
-                      // Navigate to Growth Tracking page
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFeatureCard({
-    required IconData icon,
+  Widget _buildFeatureTile({
     required String title,
-    required List<Color> gradientColors,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        margin: const EdgeInsets.only(bottom: 16),
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(16),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withOpacity(0.1),
             ),
-            borderRadius: BorderRadius.circular(16),
+            child: Icon(icon, size: 32, color: color),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 50,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
           ),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 18),
         ),
       ),
     );

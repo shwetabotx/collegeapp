@@ -31,37 +31,75 @@ class _LoginPageState extends State<LoginPage> {
       String username = usernameController.text.trim();
       String password = passwordController.text.trim();
 
-      // Query Firestore for user
-      final querySnapshot = await FirebaseFirestore.instance
+      // Query Firestore for user in 'users' collection
+      final userQuerySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('username', isEqualTo: username)
           .where('password', isEqualTo: password)
           .get();
 
-      // Check if user exists
-      if (querySnapshot.docs.isEmpty) {
-        throw Exception('Invalid username or password.');
-      }
+      // If the user is found in the 'users' collection
+      if (userQuerySnapshot.docs.isNotEmpty) {
+        final userDoc = userQuerySnapshot.docs.first;
+        String role = userDoc['role'];
 
-      // Get user data
-      final userDoc = querySnapshot.docs.first;
-      String role = userDoc['role'];
+        // Navigate to role-based page
+        if (mounted) {
+          Navigator.pop(context); // Remove loading circle
 
-      // Navigate to role-based page
-      if (mounted) {
-        Navigator.pop(context); // Remove loading circle
+          if (role == 'Student') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => StudentHomePage()),
+            );
+          } else if (role == 'Teacher') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => TeacherHomePage()),
+            );
+          } else if (role == 'Admin') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => AdminHomePage()),
+            );
+          } else {
+            throw Exception('Invalid role.');
+          }
+        }
+      } else {
+        // If user is not found in the 'users' collection, check in the 'students' subcollection
+        final classDocs =
+            await FirebaseFirestore.instance.collection('classes').get();
 
-        if (role == 'Student') {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => StudentHomePage()));
-        } else if (role == 'Teacher') {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => TeacherHomePage()));
-        } else if (role == 'Admin') {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => AdminHomePage()));
-        } else {
-          throw Exception('Invalid role.');
+        bool studentFound = false;
+
+        for (var classDoc in classDocs.docs) {
+          final studentQuerySnapshot = await FirebaseFirestore.instance
+              .collection('classes')
+              .doc(classDoc.id)
+              .collection('students')
+              .where('username', isEqualTo: username)
+              .where('password', isEqualTo: password)
+              .get();
+
+          if (studentQuerySnapshot.docs.isNotEmpty) {
+            if (mounted) {
+              Navigator.pop(context); // Remove loading circle
+
+              // Navigate to Student Home Page
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => StudentHomePage()),
+              );
+            }
+
+            studentFound = true;
+            break;
+          }
+        }
+
+        if (!studentFound) {
+          throw Exception('Invalid username or password.');
         }
       }
     } catch (e) {

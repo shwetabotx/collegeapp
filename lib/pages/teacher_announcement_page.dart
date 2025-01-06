@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TeacherAnnouncementPage extends StatelessWidget {
-  const TeacherAnnouncementPage({super.key});
-
+  const TeacherAnnouncementPage(
+      {super.key, required this.teacherId, required this.classId});
+  final String teacherId;
+  final String classId;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,10 +83,8 @@ class TeacherAnnouncementPage extends StatelessWidget {
                     'title': titleController.text,
                     'content': contentController.text,
                     'timestamp': Timestamp.now(),
-                    'teacherId':
-                        "teacher123", // Replace with current teacher ID
-                    'classId':
-                        "class123", // Replace with the teacher's class ID
+                    'teacherId': teacherId, // Replace with current teacher ID
+                    'classId': classId, // Replace with the teacher's class ID
                   });
                   // ignore: use_build_context_synchronously
                   Navigator.pop(context);

@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
       String username = usernameController.text.trim();
       String password = passwordController.text.trim();
 
-      // Query 'users' collection
+      // Query 'users' collection for Admins or other general users
       final userQuerySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('username', isEqualTo: username)
@@ -51,10 +51,8 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         } else if (role == 'Teacher') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => TeacherHomePage()),
-          );
+          throw Exception(
+              'Teachers must log in via the class-specific subcollection.');
         } else if (role == 'Admin') {
           Navigator.pushReplacement(
             context,
@@ -63,9 +61,17 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           throw Exception('Invalid role.');
         }
-      } else {
-        // Search in 'teachers' collection
+        return;
+      }
+
+      // Search for teachers in 'classes' subcollections
+      final classDocs =
+          await FirebaseFirestore.instance.collection('classes').get();
+
+      for (var classDoc in classDocs.docs) {
         final teacherQuerySnapshot = await FirebaseFirestore.instance
+            .collection('classes')
+            .doc(classDoc.id)
             .collection('teachers')
             .where('username', isEqualTo: username)
             .where('password', isEqualTo: password)
@@ -74,46 +80,50 @@ class _LoginPageState extends State<LoginPage> {
         if (teacherQuerySnapshot.docs.isNotEmpty) {
           if (mounted) Navigator.pop(context); // Remove loading indicator
 
+          final teacherDoc = teacherQuerySnapshot.docs.first;
+
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => TeacherHomePage()),
+            MaterialPageRoute(
+              builder: (context) => TeacherHomePage(
+                teacherId: teacherDoc.id,
+                classId: classDoc.id,
+              ),
+            ),
           );
           return;
         }
-
-        // Search in 'students' subcollection
-        final classDocs =
-            await FirebaseFirestore.instance.collection('classes').get();
-
-        for (var classDoc in classDocs.docs) {
-          final studentQuerySnapshot = await FirebaseFirestore.instance
-              .collection('classes')
-              .doc(classDoc.id)
-              .collection('students')
-              .where('username', isEqualTo: username)
-              .where('password', isEqualTo: password)
-              .get();
-
-          if (studentQuerySnapshot.docs.isNotEmpty) {
-            if (mounted) Navigator.pop(context); // Remove loading indicator
-
-            final studentDoc = studentQuerySnapshot.docs.first;
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => StudentHomePage(
-                  classId: classDoc.id,
-                  studentId: studentDoc.id,
-                ),
-              ),
-            );
-            return;
-          }
-        }
-
-        throw Exception('Invalid username or password.');
       }
+
+      // Search for students in 'classes' subcollections
+      for (var classDoc in classDocs.docs) {
+        final studentQuerySnapshot = await FirebaseFirestore.instance
+            .collection('classes')
+            .doc(classDoc.id)
+            .collection('students')
+            .where('username', isEqualTo: username)
+            .where('password', isEqualTo: password)
+            .get();
+
+        if (studentQuerySnapshot.docs.isNotEmpty) {
+          if (mounted) Navigator.pop(context); // Remove loading indicator
+
+          final studentDoc = studentQuerySnapshot.docs.first;
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudentHomePage(
+                classId: classDoc.id,
+                studentId: studentDoc.id,
+              ),
+            ),
+          );
+          return;
+        }
+      }
+
+      throw Exception('Invalid username or password.');
     } catch (e) {
       if (mounted) Navigator.pop(context); // Remove loading indicator
       showErrorMessage("Invalid credentials. Please try again.");
@@ -138,44 +148,107 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 50),
-                const Icon(Icons.school, size: 100),
-                const SizedBox(height: 50),
-                Text(
-                  'Welcome! Please log in',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
-                ),
-                const SizedBox(height: 25),
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
-                    border: OutlineInputBorder(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 30),
+                  const Icon(Icons.school, size: 100, color: Colors.white),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Welcome Back!',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Log in to your account',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 25),
-                ElevatedButton(
-                  onPressed: signUserIn,
-                  child: const Text('Sign In'),
-                ),
-                const SizedBox(height: 50),
-              ],
+                  const SizedBox(height: 40),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 8,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: usernameController,
+                            decoration: InputDecoration(
+                              labelText: 'Username',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              prefixIcon: const Icon(Icons.person),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: passwordController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              prefixIcon: const Icon(Icons.lock),
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: signUserIn,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6A11CB),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Sign In',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Forgot your password?',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                ],
+              ),
             ),
           ),
         ),

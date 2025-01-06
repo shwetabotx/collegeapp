@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'year_selection_page.dart';
 
 class MajorSelectionPage extends StatelessWidget {
-  const MajorSelectionPage({super.key});
+  const MajorSelectionPage(
+      {super.key, required this.teacherId, required this.classId});
+  final String teacherId;
+  final String classId;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,11 @@ class MajorSelectionPage extends StatelessWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => TeacherHomePage()),
+                MaterialPageRoute(
+                    builder: (context) => TeacherHomePage(
+                          teacherId: teacherId, // Pass teacherId
+                          classId: classId,
+                        )),
               );
             });
           },

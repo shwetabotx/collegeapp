@@ -5,7 +5,15 @@ import 'package:flutter/material.dart';
 import 'login_page.dart';
 
 class TeacherHomePage extends StatelessWidget {
-  const TeacherHomePage({super.key});
+  final String teacherId;
+  final String classId;
+
+  // Update the constructor to accept teacherId and classId
+  const TeacherHomePage({
+    super.key,
+    required this.teacherId,
+    required this.classId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -241,14 +249,21 @@ class TeacherHomePage extends StatelessWidget {
           // Navigate to Mark Attendance page
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const MajorSelectionPage()),
+            MaterialPageRoute(
+                builder: (context) => MajorSelectionPage(
+                      teacherId: teacherId, // Pass teacherId
+                      classId: classId, // Pass classId
+                    )),
           );
         } else if (title == "Announcement") {
           // Navigate to Mark Attendance page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) => const TeacherAnnouncementPage()),
+                builder: (context) => TeacherAnnouncementPage(
+                      teacherId: teacherId, // Pass teacherId
+                      classId: classId,
+                    )),
           );
         } else if (title == "Assign Homework") {
           // Navigate to Assign Homework page

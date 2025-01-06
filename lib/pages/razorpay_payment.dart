@@ -4,7 +4,11 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class RazorpayPage extends StatefulWidget {
-  const RazorpayPage({super.key});
+  final String classId;
+  final String studentId;
+
+  const RazorpayPage(
+      {super.key, required this.classId, required this.studentId});
 
   @override
   State<RazorpayPage> createState() => _RazorpayPageState();
@@ -79,11 +83,16 @@ class _RazorpayPageState extends State<RazorpayPage> {
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
-            // Logout logic
+            // Pass the required arguments to StudentHomePage
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => StudentHomePage()),
+                MaterialPageRoute(
+                  builder: (context) => StudentHomePage(
+                    classId: widget.classId,
+                    studentId: widget.studentId,
+                  ),
+                ),
               );
             });
           },

@@ -1,3 +1,5 @@
+import 'package:collegeapp/pages/teacher_announcement_page.dart';
+
 import 'attendance/major_selection_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
@@ -153,6 +155,8 @@ class TeacherHomePage extends StatelessWidget {
                     "Manage Classes", Icons.class_, Colors.blue, context),
                 _buildFeatureCard("Mark Attendance", Icons.check_circle,
                     Colors.orange, context),
+                _buildFeatureCard("Announcement", Icons.announcement,
+                    const Color.fromARGB(255, 24, 209, 169), context),
                 _buildFeatureCard("Assign Homework", Icons.assignment,
                     Colors.purple, context),
                 _buildFeatureCard(
@@ -238,6 +242,13 @@ class TeacherHomePage extends StatelessWidget {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const MajorSelectionPage()),
+          );
+        } else if (title == "Announcement") {
+          // Navigate to Mark Attendance page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const TeacherAnnouncementPage()),
           );
         } else if (title == "Assign Homework") {
           // Navigate to Assign Homework page

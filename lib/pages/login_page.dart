@@ -1,8 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collegeapp/pages/student_home_page.dart';
-import 'package:collegeapp/pages/teacher_home_page.dart';
-import 'package:collegeapp/pages/admin/admin_home_page.dart';
+import 'student_home_page.dart';
+import 'teacher_home_page.dart';
+import 'admin_home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,62 +18,72 @@ class _LoginPageState extends State<LoginPage> {
   final passwordController = TextEditingController();
 
   void signUserIn() async {
-    // Show loading circle
     showDialog(
       context: context,
-      builder: (context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
     try {
-      // Get user input
       String username = usernameController.text.trim();
       String password = passwordController.text.trim();
 
-      // Query Firestore for user in 'users' collection
+      // Query 'users' collection
       final userQuerySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('username', isEqualTo: username)
           .where('password', isEqualTo: password)
           .get();
 
-      // If the user is found in the 'users' collection
       if (userQuerySnapshot.docs.isNotEmpty) {
         final userDoc = userQuerySnapshot.docs.first;
         String role = userDoc['role'];
 
-        // Navigate to role-based page
-        if (mounted) {
-          Navigator.pop(context); // Remove loading circle
+        if (mounted) Navigator.pop(context); // Remove loading indicator
 
-          if (role == 'Student') {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => StudentHomePage()),
-            );
-          } else if (role == 'Teacher') {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => TeacherHomePage()),
-            );
-          } else if (role == 'Admin') {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => AdminHomePage()),
-            );
-          } else {
-            throw Exception('Invalid role.');
-          }
+        if (role == 'Student') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudentHomePage(
+                classId: userDoc['classId'],
+                studentId: userDoc.id,
+              ),
+            ),
+          );
+        } else if (role == 'Teacher') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => TeacherHomePage()),
+          );
+        } else if (role == 'Admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => AdminHomePage()),
+          );
+        } else {
+          throw Exception('Invalid role.');
         }
       } else {
-        // If user is not found in the 'users' collection, check in the 'students' subcollection
+        // Search in 'teachers' collection
+        final teacherQuerySnapshot = await FirebaseFirestore.instance
+            .collection('teachers')
+            .where('username', isEqualTo: username)
+            .where('password', isEqualTo: password)
+            .get();
+
+        if (teacherQuerySnapshot.docs.isNotEmpty) {
+          if (mounted) Navigator.pop(context); // Remove loading indicator
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => TeacherHomePage()),
+          );
+          return;
+        }
+
+        // Search in 'students' subcollection
         final classDocs =
             await FirebaseFirestore.instance.collection('classes').get();
-
-        bool studentFound = false;
 
         for (var classDoc in classDocs.docs) {
           final studentQuerySnapshot = await FirebaseFirestore.instance
@@ -83,46 +95,43 @@ class _LoginPageState extends State<LoginPage> {
               .get();
 
           if (studentQuerySnapshot.docs.isNotEmpty) {
-            if (mounted) {
-              Navigator.pop(context); // Remove loading circle
+            if (mounted) Navigator.pop(context); // Remove loading indicator
 
-              // Navigate to Student Home Page
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => StudentHomePage()),
-              );
-            }
+            final studentDoc = studentQuerySnapshot.docs.first;
 
-            studentFound = true;
-            break;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StudentHomePage(
+                  classId: classDoc.id,
+                  studentId: studentDoc.id,
+                ),
+              ),
+            );
+            return;
           }
         }
 
-        if (!studentFound) {
-          throw Exception('Invalid username or password.');
-        }
+        throw Exception('Invalid username or password.');
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context); // Remove loading circle
-      showErrorMessage(e.toString());
+      if (mounted) Navigator.pop(context); // Remove loading indicator
+      showErrorMessage("Invalid credentials. Please try again.");
     }
   }
 
   void showErrorMessage(String message) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.red,
-          title: Center(
-            child: Text(
-              message,
-              style: const TextStyle(color: Colors.white),
-            ),
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.red,
+        title: Center(
+          child: Text(
+            message,
+            style: const TextStyle(color: Colors.white),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -144,7 +153,6 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(color: Colors.grey[700], fontSize: 16),
                 ),
                 const SizedBox(height: 25),
-                // Username TextField
                 TextField(
                   controller: usernameController,
                   decoration: const InputDecoration(
@@ -153,7 +161,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Password TextField
                 TextField(
                   controller: passwordController,
                   obscureText: true,
@@ -163,7 +170,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 25),
-                // Sign In Button
                 ElevatedButton(
                   onPressed: signUserIn,
                   child: const Text('Sign In'),

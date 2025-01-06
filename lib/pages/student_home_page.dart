@@ -1,9 +1,15 @@
+import 'package:collegeapp/pages/attendance_tracking_page.dart';
+import 'package:collegeapp/pages/student_announcement_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
-import 'student/razorpay_payment.dart';
+import 'razorpay_payment.dart';
 
 class StudentHomePage extends StatefulWidget {
-  const StudentHomePage({super.key});
+  final String classId;
+  final String studentId;
+
+  const StudentHomePage(
+      {super.key, required this.classId, required this.studentId});
 
   @override
   State<StudentHomePage> createState() => _StudentHomePageState();
@@ -98,6 +104,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   color: Colors.purple.shade400,
                   onTap: () {
                     // Navigate to Attendance
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AttendanceTrackingPage(
+                            classId: widget.classId,
+                            studentId: widget.studentId),
+                      ),
+                    );
                   },
                 ),
                 _buildFeatureTile(
@@ -107,6 +121,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   color: Colors.purpleAccent,
                   onTap: () {
                     // Navigate to Announcements
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            StudentAnnouncementsPage(classId: widget.classId),
+                      ),
+                    );
                   },
                 ),
                 _buildFeatureTile(
@@ -117,7 +138,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => RazorpayPage()),
+                      MaterialPageRoute(
+                        builder: (context) => RazorpayPage(
+                            classId: widget.classId,
+                            studentId: widget.studentId),
+                      ),
                     );
                   },
                 ),

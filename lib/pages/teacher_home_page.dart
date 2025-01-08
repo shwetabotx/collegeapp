@@ -1,4 +1,5 @@
 import 'package:collegeapp/pages/teacher_announcement_page.dart';
+import 'package:collegeapp/pages/teacher_time_table.dart';
 
 import 'attendance/major_selection_page.dart';
 import 'package:flutter/material.dart';
@@ -165,6 +166,8 @@ class TeacherHomePage extends StatelessWidget {
                     Colors.orange, context),
                 _buildFeatureCard("Announcement", Icons.announcement,
                     const Color.fromARGB(255, 24, 209, 169), context),
+                _buildFeatureCard(
+                    "Time-Table", Icons.calendar_month, Colors.pink, context),
                 _buildFeatureCard("Assign Homework", Icons.assignment,
                     Colors.purple, context),
                 _buildFeatureCard(
@@ -281,6 +284,15 @@ class TeacherHomePage extends StatelessWidget {
           // Navigate to Messages page
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text('Tapped on Messages')));
+        } else if (title == "Time-Table") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TeacherTimeTablePage(
+                      teacherId: teacherId, // Pass teacherId
+                      classId: classId,
+                    )),
+          );
         }
       },
       child: Card(

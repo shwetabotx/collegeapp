@@ -1,5 +1,6 @@
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
+import 'package:collegeapp/pages/student_timetable_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'razorpay_payment.dart';
@@ -115,6 +116,23 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   },
                 ),
                 _buildFeatureTile(
+                  title: "Time-Table",
+                  subtitle: "Your Weekly Time-Table",
+                  icon: Icons.calendar_month,
+                  color: Colors.deepPurple.shade400,
+                  onTap: () {
+                    // Navigate to Time-Table
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StudentTimeTablePage(
+                            classId: widget.classId,
+                            studentId: widget.studentId),
+                      ),
+                    );
+                  },
+                ),
+                _buildFeatureTile(
                   title: "Announcements",
                   subtitle: "View important updates",
                   icon: Icons.announcement,
@@ -180,15 +198,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   color: Colors.purpleAccent.shade700,
                   onTap: () {
                     // Navigate to Test Results
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Growth Tracking",
-                  subtitle: "Monitor your growth",
-                  icon: Icons.show_chart,
-                  color: Colors.deepPurple.shade400,
-                  onTap: () {
-                    // Navigate to Growth Tracking
                   },
                 ),
               ],

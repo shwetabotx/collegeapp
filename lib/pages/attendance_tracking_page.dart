@@ -40,13 +40,13 @@ class AttendanceTrackingPage extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.shade300,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                     blurRadius: 6,
                   ),
                 ],
               ),
-              child: Column(
-                children: const [
+              child: const Column(
+                children: [
                   Icon(Icons.access_alarm, size: 40, color: Colors.deepPurple),
                   SizedBox(height: 8),
                   Text(

@@ -14,7 +14,7 @@ class AdminHomePage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.deepPurpleAccent,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.deepPurple, Colors.purpleAccent],
               begin: Alignment.topLeft,
@@ -30,11 +30,11 @@ class AdminHomePage extends StatelessWidget {
                 // Navigate to profile page
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               });
             },
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
           ),
         ],
       ),

@@ -215,8 +215,8 @@ class TeacherHomePage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            Center(
-              child: const Text(
+            const Center(
+              child: Text(
                 "Powered by College App",
                 style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
@@ -275,7 +275,7 @@ class TeacherHomePage extends StatelessWidget {
       onTap: () {
         if (title == "Manage Classes") {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Tapped on Manage Classes')));
+              const SnackBar(content: Text('Tapped on Manage Classes')));
         } else if (title == "Mark Attendance") {
           Navigator.pushReplacement(
             context,

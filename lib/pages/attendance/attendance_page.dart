@@ -79,7 +79,7 @@ class _AttendancePageState extends State<AttendancePage> {
       logger.e("Error marking attendance: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to mark attendance')),
+          const SnackBar(content: Text('Failed to mark attendance')),
         );
       }
     }

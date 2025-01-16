@@ -33,14 +33,14 @@ class AttendanceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Attendance Tracking 👩🏻‍🏫'),
+        title: const Text('Attendance Tracking 👩🏻‍🏫'),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: getStudentAttendance(classId, studentId), // Fetch attendance
         builder: (context, snapshot) {
           // Show loading spinner while data is being fetched
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           // Show error if there's an issue
@@ -53,7 +53,7 @@ class AttendanceScreen extends StatelessWidget {
 
           // Show message if no records are found
           if (attendanceRecords.isEmpty) {
-            return Center(child: Text('No attendance records found.'));
+            return const Center(child: Text('No attendance records found.'));
           }
 
           // Display attendance records in a ListView
@@ -62,7 +62,8 @@ class AttendanceScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final record = attendanceRecords[index];
               return Card(
-                margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                margin:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: ListTile(
                   leading: Icon(
                     record['status'] == 'Present'

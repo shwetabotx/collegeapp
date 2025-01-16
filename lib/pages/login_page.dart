@@ -56,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
         } else if (role == 'Admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => AdminHomePage()),
+            MaterialPageRoute(builder: (context) => const AdminHomePage()),
           );
         } else {
           throw Exception('Invalid role.');
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 30),
                   const Icon(Icons.school, size: 100, color: Colors.white),
                   const SizedBox(height: 20),
-                  Text(
+                  const Text(
                     'Welcome Back!',
                     style: TextStyle(
                       fontSize: 28,

@@ -24,7 +24,7 @@ class AttendanceTrackingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Attendance Records"),
+        title: const Text("Attendance Records 🙋🏻‍♀️"),
         backgroundColor: Colors.deepPurple,
       ),
       body: Padding(

@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class StudentTimeTablePage extends StatelessWidget {
-  const StudentTimeTablePage(
-      {super.key, required this.classId, required String studentId});
+  const StudentTimeTablePage({super.key, required this.classId});
   final String classId;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Student Timetable"),
+        title: const Text("Student Timetable 🗓️"),
         backgroundColor: Colors.green,
         centerTitle: true,
       ),
@@ -20,7 +19,7 @@ class StudentTimeTablePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              "Your Timetable ->",
+              "Your Timetable",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -31,7 +30,7 @@ class StudentTimeTablePage extends StatelessWidget {
     );
   }
 
-  // Function to display the timetable in a table format with days as columns
+  // Function to display the timetable grouped by day
   Widget _buildTimeTableTable() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -56,54 +55,39 @@ class StudentTimeTablePage extends StatelessWidget {
         var timetableData = _groupEntriesByDay(snapshot.data!.docs);
 
         return SingleChildScrollView(
-          scrollDirection: Axis.horizontal, // Make it horizontally scrollable
+          scrollDirection: Axis.vertical, // Make it vertically scrollable
           child: Table(
             border: TableBorder.all(),
-            columnWidths: const {
-              0: FixedColumnWidth(120),
-              1: FixedColumnWidth(120),
-              2: FixedColumnWidth(120),
-              3: FixedColumnWidth(120),
-              4: FixedColumnWidth(120),
-              5: FixedColumnWidth(120),
-              6: FixedColumnWidth(120),
-            },
             children: [
-              TableRow(
+              const TableRow(
                 children: [
-                  const TableCell(
+                  TableCell(child: Text('Day', textAlign: TextAlign.center)),
+                  TableCell(
                       child: Text('Subject', textAlign: TextAlign.center)),
-                  const TableCell(
-                      child: Text('Monday', textAlign: TextAlign.center)),
-                  const TableCell(
-                      child: Text('Tuesday', textAlign: TextAlign.center)),
-                  const TableCell(
-                      child: Text('Wednesday', textAlign: TextAlign.center)),
-                  const TableCell(
-                      child: Text('Thursday', textAlign: TextAlign.center)),
-                  const TableCell(
-                      child: Text('Friday', textAlign: TextAlign.center)),
-                  const TableCell(
-                      child: Text('Saturday', textAlign: TextAlign.center)),
+                  TableCell(child: Text('Time', textAlign: TextAlign.center)),
                 ],
               ),
-              // Loop through the timetable data for each subject
-              for (var entry in timetableData.entries)
+              // Loop through the timetable data for each day
+              for (var day in timetableData.keys)
                 TableRow(
                   children: [
+                    TableCell(child: Text(day, textAlign: TextAlign.center)),
                     TableCell(
-                        child: Text(entry.key, textAlign: TextAlign.center)),
-                    for (var day in [
-                      'Monday',
-                      'Tuesday',
-                      'Wednesday',
-                      'Thursday',
-                      'Friday',
-                      'Saturday'
-                    ])
-                      TableCell(
-                          child: Text(entry.value[day] ?? '',
-                              textAlign: TextAlign.center)),
+                      child: Column(
+                        children: timetableData[day]!
+                            .map((entry) => Text(entry['subject'] ?? '',
+                                textAlign: TextAlign.center))
+                            .toList(),
+                      ),
+                    ),
+                    TableCell(
+                      child: Column(
+                        children: timetableData[day]!
+                            .map((entry) => Text(entry['time'] ?? '',
+                                textAlign: TextAlign.center))
+                            .toList(),
+                      ),
+                    ),
                   ],
                 ),
             ],
@@ -114,9 +98,9 @@ class StudentTimeTablePage extends StatelessWidget {
   }
 
   // Function to group timetable entries by day
-  Map<String, Map<String, String>> _groupEntriesByDay(
+  Map<String, List<Map<String, String>>> _groupEntriesByDay(
       List<QueryDocumentSnapshot> docs) {
-    Map<String, Map<String, String>> groupedByDay = {};
+    Map<String, List<Map<String, String>>> groupedByDay = {};
 
     for (var doc in docs) {
       var timetable = doc.data() as Map<String, dynamic>;
@@ -128,21 +112,14 @@ class StudentTimeTablePage extends StatelessWidget {
           var time = entry['time'];
           var day = entry['day'];
 
-          if (!groupedByDay.containsKey(subject)) {
-            groupedByDay[subject] = {
-              'Monday': '',
-              'Tuesday': '',
-              'Wednesday': '',
-              'Thursday': '',
-              'Friday': '',
-              'Saturday': '',
-            };
+          if (!groupedByDay.containsKey(day)) {
+            groupedByDay[day] = [];
           }
 
-          // Add the subject and time to the corresponding day
-          if (groupedByDay[subject] != null) {
-            groupedByDay[subject]?[day] = '$time';
-          }
+          groupedByDay[day]!.add({
+            'subject': subject,
+            'time': time,
+          });
         }
       }
     }

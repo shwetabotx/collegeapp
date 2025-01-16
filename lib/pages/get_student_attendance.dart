@@ -33,7 +33,7 @@ class AttendanceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Attendance Tracking'),
+        title: Text('Attendance Tracking 👩🏻‍🏫'),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: getStudentAttendance(classId, studentId), // Fetch attendance

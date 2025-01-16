@@ -1,20 +1,42 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/teacher_announcement_page.dart';
 import 'package:collegeapp/pages/teacher_time_table.dart';
-
 import 'attendance/major_selection_page.dart';
-import 'package:flutter/material.dart';
 import 'login_page.dart';
 
 class TeacherHomePage extends StatelessWidget {
   final String teacherId;
   final String classId;
 
-  // Update the constructor to accept teacherId and classId
+  // Constructor to accept teacherId and classId
   const TeacherHomePage({
     super.key,
     required this.teacherId,
     required this.classId,
   });
+
+  Future<Map<String, String>> fetchTeacherDetails() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(classId)
+          .collection('teachers')
+          .doc(teacherId)
+          .get();
+
+      if (snapshot.exists) {
+        final data = snapshot.data();
+        return {
+          'name': data?['name'] ?? 'Unknown Name',
+          'department': data?['department'] ?? 'Unknown Department',
+        };
+      }
+    } catch (e) {
+      debugPrint('Error fetching teacher details: $e');
+    }
+    return {'name': 'Unknown Name', 'department': 'Unknown Department'};
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,74 +68,89 @@ class TeacherHomePage extends StatelessWidget {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.green),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage:
-                        AssetImage('assets/profile_placeholder.png'),
+      drawer: FutureBuilder<Map<String, String>>(
+        future: fetchTeacherDetails(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Drawer(
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final teacherDetails = snapshot.data ?? {};
+          final teacherName = teacherDetails['name']!;
+          final teacherDepartment = teacherDetails['department']!;
+
+          return Drawer(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                DrawerHeader(
+                  decoration: const BoxDecoration(color: Colors.green),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const CircleAvatar(
+                        radius: 30,
+                        backgroundImage: AssetImage('lib/images/girl1.png'),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        teacherName,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      Text(
+                        teacherDepartment,
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Teacher Name",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    "Mathematics Department",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.home),
+                  title: const Text("Home"),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text("My Profile"),
+                  onTap: () {
+                    // Navigate to profile page
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notifications),
+                  title: const Text("Notifications"),
+                  onTap: () {
+                    // Navigate to notifications page
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.help),
+                  title: const Text("Help & Support"),
+                  onTap: () {
+                    // Navigate to help page
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: const Text("Logout"),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
+                    );
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text("Home"),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text("My Profile"),
-              onTap: () {
-                // Navigate to profile page
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text("Notifications"),
-              onTap: () {
-                // Navigate to notifications page
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.help),
-              title: const Text("Help & Support"),
-              onTap: () {
-                // Navigate to help page
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text("Logout"),
-              onTap: () {
-                // Logout logic
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-                // Logout logic here
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -129,7 +166,6 @@ class TeacherHomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Horizontal scrolling for the Dashboard cards
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -190,7 +226,7 @@ class TeacherHomePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Action for quick add (e.g., create new assignment or announcement)
+          // Quick add action
         },
         backgroundColor: Colors.green,
         child: const Icon(Icons.add),
@@ -198,13 +234,10 @@ class TeacherHomePage extends StatelessWidget {
     );
   }
 
-  // Dashboard Card with onTap method
   Widget _buildDashboardCard(
       String title, String value, IconData icon, BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Add your desired action for the dashboard card tap
-        // Example: Navigate to a detailed view page or show a dialog
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Tapped on $title')));
       },
@@ -236,60 +269,37 @@ class TeacherHomePage extends StatelessWidget {
     );
   }
 
-  // Feature Card with onTap method
   Widget _buildFeatureCard(
       String title, IconData icon, Color color, BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Perform an action based on the feature card tapped
-        // Example: Navigate to the respective feature's page
         if (title == "Manage Classes") {
-          // Navigate to Manage Classes page
-
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Tapped on Manage Classes')));
         } else if (title == "Mark Attendance") {
-          // Navigate to Mark Attendance page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => MajorSelectionPage(
-                      teacherId: teacherId, // Pass teacherId
-                      classId: classId, // Pass classId
+                      teacherId: teacherId,
+                      classId: classId,
                     )),
           );
         } else if (title == "Announcement") {
-          // Navigate to Mark Attendance page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => TeacherAnnouncementPage(
-                      teacherId: teacherId, // Pass teacherId
+                      teacherId: teacherId,
                       classId: classId,
                     )),
           );
-        } else if (title == "Assign Homework") {
-          // Navigate to Assign Homework page
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Tapped on Assign Homework')));
-        } else if (title == "Grade Assignments") {
-          // Navigate to Grade Assignments page
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Tapped on Grade Assignments')));
-        } else if (title == "Upload Resources") {
-          // Navigate to Upload Resources page
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Tapped on Upload Resources')));
-        } else if (title == "Messages") {
-          // Navigate to Messages page
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Tapped on Messages')));
         } else if (title == "Time-Table") {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => TeacherTimeTablePage(
-                      teacherId: teacherId, // Pass teacherId
+                      teacherId: teacherId,
                       classId: classId,
                     )),
           );

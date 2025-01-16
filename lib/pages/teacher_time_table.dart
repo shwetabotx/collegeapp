@@ -13,8 +13,6 @@ class TeacherTimeTablePage extends StatefulWidget {
 }
 
 class TeacherTimeTablePageState extends State<TeacherTimeTablePage> {
-  // Create a logger instance
-
   // Controllers for subject, time, and day input
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
@@ -22,12 +20,51 @@ class TeacherTimeTablePageState extends State<TeacherTimeTablePage> {
 
   // List to store timetable entries
   List<Map<String, String>> timetableEntries = [];
+  List<Map<String, String>> submittedTimetableEntries = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSubmittedTimetable();
+  }
+
+  // Function to fetch and load the existing timetable from Firestore
+  void _loadSubmittedTimetable() async {
+    try {
+      var timetableRef = FirebaseFirestore.instance.collection('timetables');
+
+      var querySnapshot = await timetableRef
+          .where('teacherId', isEqualTo: widget.teacherId)
+          .where('classId', isEqualTo: widget.classId)
+          .get();
+
+      List<Map<String, String>> fetchedTimetableEntries = [];
+      for (var doc in querySnapshot.docs) {
+        var entries = doc['entries'] as List<dynamic>;
+        for (var entry in entries) {
+          fetchedTimetableEntries.add({
+            'subject': entry['subject'],
+            'time': entry['time'],
+            'day': entry['day'],
+          });
+        }
+      }
+
+      setState(() {
+        submittedTimetableEntries = fetchedTimetableEntries;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading timetable: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Teacher Dashboard"),
+        title: const Text("Time-Table 🗓️"),
         backgroundColor: Colors.green,
         centerTitle: true,
         leading: IconButton(
@@ -72,7 +109,14 @@ class TeacherTimeTablePageState extends State<TeacherTimeTablePage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            _buildTimeTableTable(),
+            _buildGroupedTimeTableTable(submittedTimetableEntries),
+            const SizedBox(height: 16),
+            const Text(
+              "New Timetable Entries",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            _buildGroupedTimeTableTable(timetableEntries),
           ],
         ),
       ),
@@ -147,9 +191,22 @@ class TeacherTimeTablePageState extends State<TeacherTimeTablePage> {
   void _submitTimetable() async {
     if (timetableEntries.isNotEmpty) {
       try {
+        // Reference to the collection where the timetable is stored
+        var timetableRef = FirebaseFirestore.instance.collection('timetables');
+
+        // First, delete any existing timetable for the teacher and class
+        var querySnapshot = await timetableRef
+            .where('teacherId', isEqualTo: widget.teacherId)
+            .where('classId', isEqualTo: widget.classId)
+            .get();
+
+        // Delete the existing timetable if found
+        for (var doc in querySnapshot.docs) {
+          await doc.reference.delete();
+        }
+
         // Create a new document for the timetable and add the entries
-        var timetableDocRef =
-            FirebaseFirestore.instance.collection('timetables').doc();
+        var timetableDocRef = timetableRef.doc();
 
         // Add timetable entries as an array to the new document
         await timetableDocRef.set({
@@ -168,6 +225,9 @@ class TeacherTimeTablePageState extends State<TeacherTimeTablePage> {
         setState(() {
           timetableEntries.clear();
         });
+
+        // Reload the submitted timetable data
+        _loadSubmittedTimetable();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error submitting timetable: $e')),
@@ -180,42 +240,65 @@ class TeacherTimeTablePageState extends State<TeacherTimeTablePage> {
     }
   }
 
-  // Function to display timetable entries in a horizontally scrollable table
-  Widget _buildTimeTableTable() {
-    if (timetableEntries.isEmpty) {
+  // Function to group timetable entries by day
+  Map<String, List<Map<String, String>>> _groupByDay(
+      List<Map<String, String>> entries) {
+    Map<String, List<Map<String, String>>> groupedByDay = {};
+
+    for (var entry in entries) {
+      String day = entry['day']!;
+      if (!groupedByDay.containsKey(day)) {
+        groupedByDay[day] = [];
+      }
+      groupedByDay[day]!.add({
+        'subject': entry['subject']!,
+        'time': entry['time']!,
+      });
+    }
+    return groupedByDay;
+  }
+
+  // Function to build a grouped timetable table
+  Widget _buildGroupedTimeTableTable(List<Map<String, String>> entries) {
+    Map<String, List<Map<String, String>>> groupedEntries =
+        _groupByDay(entries);
+
+    if (groupedEntries.isEmpty) {
       return const Center(child: Text("No timetable entries available."));
     }
 
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal, // Enable horizontal scrolling
+      scrollDirection: Axis.vertical, // Enable vertical scrolling
       child: Table(
         border: TableBorder.all(),
-        columnWidths: const {
-          0: FixedColumnWidth(120),
-          1: FixedColumnWidth(120),
-          2: FixedColumnWidth(120),
-        },
         children: [
-          TableRow(
+          const TableRow(
             children: [
-              const TableCell(
-                  child: Text('Subject', textAlign: TextAlign.center)),
-              const TableCell(child: Text('Time', textAlign: TextAlign.center)),
-              const TableCell(child: Text('Day', textAlign: TextAlign.center)),
+              TableCell(child: Text('Day', textAlign: TextAlign.center)),
+              TableCell(child: Text('Subject', textAlign: TextAlign.center)),
+              TableCell(child: Text('Time', textAlign: TextAlign.center)),
             ],
           ),
-          for (var entry in timetableEntries)
+          for (var day in groupedEntries.keys)
             TableRow(
               children: [
+                TableCell(child: Text(day, textAlign: TextAlign.center)),
                 TableCell(
-                    child: Text(entry['subject'] ?? '',
-                        textAlign: TextAlign.center)),
+                  child: Column(
+                    children: groupedEntries[day]!
+                        .map((entry) => Text(entry['subject'] ?? '',
+                            textAlign: TextAlign.center))
+                        .toList(),
+                  ),
+                ),
                 TableCell(
-                    child:
-                        Text(entry['time'] ?? '', textAlign: TextAlign.center)),
-                TableCell(
-                    child:
-                        Text(entry['day'] ?? '', textAlign: TextAlign.center)),
+                  child: Column(
+                    children: groupedEntries[day]!
+                        .map((entry) => Text(entry['time'] ?? '',
+                            textAlign: TextAlign.center))
+                        .toList(),
+                  ),
+                ),
               ],
             ),
         ],

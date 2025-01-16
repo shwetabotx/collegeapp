@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
@@ -9,14 +10,44 @@ class StudentHomePage extends StatefulWidget {
   final String classId;
   final String studentId;
 
-  const StudentHomePage(
-      {super.key, required this.classId, required this.studentId});
+  const StudentHomePage({
+    super.key,
+    required this.classId,
+    required this.studentId,
+  });
 
   @override
   State<StudentHomePage> createState() => _StudentHomePageState();
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
+  String studentName = "Student"; // Default name in case fetching fails
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStudentName();
+  }
+
+  Future<void> _fetchStudentName() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(widget.classId)
+          .collection('students')
+          .doc(widget.studentId)
+          .get();
+
+      if (snapshot.exists) {
+        setState(() {
+          studentName = snapshot.data()?['name'] ?? "Student";
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching student name: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,16 +63,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
             ),
           ),
         ),
-        leading: IconButton(
-          onPressed: () {
-            // Logout logic
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          },
-          icon: const Icon(Icons.logout),
-        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Logout logic
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -65,12 +98,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     const CircleAvatar(
                       radius: 40,
                       backgroundImage: AssetImage(
-                          'assets/profile_picture.jpg'), // Add profile picture
+                          'lib/images/girl1.png'), // Add profile picture
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      "Welcome, Student!",
-                      style: TextStyle(
+                    Text(
+                      "Welcome, $studentName!",
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -126,8 +159,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => StudentTimeTablePage(
-                            classId: widget.classId,
-                            studentId: widget.studentId),
+                          classId: widget.classId,
+                        ),
                       ),
                     );
                   },

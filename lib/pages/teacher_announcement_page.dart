@@ -11,7 +11,7 @@ class TeacherAnnouncementPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Teacher Dashboard"),
+        title: const Text("Announcement 📢"),
         backgroundColor: Colors.green,
         centerTitle: true,
         leading: IconButton(

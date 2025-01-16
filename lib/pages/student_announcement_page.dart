@@ -12,7 +12,7 @@ class StudentAnnouncementsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Announcements"),
+        title: const Text("Announcements 📢"),
         backgroundColor: Colors.blue,
       ),
       body: StreamBuilder<QuerySnapshot>(

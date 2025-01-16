@@ -1,3 +1,4 @@
+import 'package:collegeapp/pages/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -13,6 +14,20 @@ class TeacherAnnouncementPage extends StatelessWidget {
         title: const Text("Teacher Dashboard"),
         backgroundColor: Colors.green,
         centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            // Logout logic
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => TeacherHomePage(
+                        teacherId: teacherId, // Pass teacherId
+                        classId: classId,
+                      )),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

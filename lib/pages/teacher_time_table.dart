@@ -1,3 +1,4 @@
+import 'package:collegeapp/pages/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -29,6 +30,20 @@ class TeacherTimeTablePageState extends State<TeacherTimeTablePage> {
         title: const Text("Teacher Dashboard"),
         backgroundColor: Colors.green,
         centerTitle: true,
+        leading: IconButton(
+          onPressed: () {
+            // Logout logic
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => TeacherHomePage(
+                        teacherId: widget.teacherId, // Pass teacherId
+                        classId: widget.classId,
+                      )),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

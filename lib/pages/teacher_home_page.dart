@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:collegeapp/pages/teacher_assignment_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/teacher_announcement_page.dart';
 import 'package:collegeapp/pages/teacher_time_table.dart';
@@ -207,11 +208,13 @@ class TeacherHomePage extends StatelessWidget {
                 _buildFeatureCard("Assign Homework", Icons.assignment,
                     Colors.purple, context),
                 _buildFeatureCard(
-                    "Grade Assignments", Icons.grade, Colors.red, context),
+                    "Assignments", Icons.grade, Colors.red, context),
                 _buildFeatureCard("Upload Resources", Icons.upload_file,
                     Colors.teal, context),
                 _buildFeatureCard(
                     "Messages", Icons.message, Colors.cyan, context),
+                _buildFeatureCard("Test Marks", Icons.star,
+                    const Color.fromARGB(255, 101, 47, 228), context),
               ],
             ),
             const SizedBox(height: 24),
@@ -303,6 +306,15 @@ class TeacherHomePage extends StatelessWidget {
                       classId: classId,
                     )),
           );
+        } else if (title == "Assignments") {
+          /*Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TeacherAssignmentPage(
+                      teacherId: teacherId,
+                      classId: classId,
+                    )),
+          );*/
         }
       },
       child: Card(

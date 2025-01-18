@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
+//import 'package:collegeapp/pages/student_assignment_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
@@ -182,6 +183,22 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   },
                 ),
                 _buildFeatureTile(
+                  title: "Assignments",
+                  subtitle: "Track your assignments",
+                  icon: Icons.assignment,
+                  color: Colors.deepPurple.shade800,
+                  onTap: () {
+                    // Navigate to Assignments
+                    /*Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            StudentAssignmentsPage(classId: widget.classId),
+                      ),
+                    );*/
+                  },
+                ),
+                _buildFeatureTile(
                   title: "Fees",
                   subtitle: "Pay your college fees",
                   icon: Icons.currency_rupee,
@@ -213,15 +230,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   color: Colors.purple.shade300,
                   onTap: () {
                     // Navigate to Important Links
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Assignments",
-                  subtitle: "Track your assignments",
-                  icon: Icons.assignment,
-                  color: Colors.deepPurple.shade800,
-                  onTap: () {
-                    // Navigate to Assignments
                   },
                 ),
                 _buildFeatureTile(

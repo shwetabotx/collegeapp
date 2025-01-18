@@ -19,7 +19,6 @@ class StudentAnnouncementsPage extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('announcements')
             .where('classId', isEqualTo: classId) // Filter by class ID
-            .orderBy('timestamp', descending: true) // Sort by timestamp
             .snapshots()
             .handleError((error) {
           // Log errors using logger
@@ -45,6 +44,13 @@ class StudentAnnouncementsPage extends StatelessWidget {
 
           // Retrieve the list of announcements from the snapshot
           final announcements = snapshot.data!.docs;
+
+          // Sort the announcements manually by timestamp (descending)
+          announcements.sort((a, b) {
+            final timestampA = (a['timestamp'] as Timestamp).toDate();
+            final timestampB = (b['timestamp'] as Timestamp).toDate();
+            return timestampB.compareTo(timestampA);
+          });
 
           return ListView.builder(
             itemCount: announcements.length,

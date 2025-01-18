@@ -7,6 +7,7 @@ class TeacherAnnouncementPage extends StatelessWidget {
       {super.key, required this.teacherId, required this.classId});
   final String teacherId;
   final String classId;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,14 +17,14 @@ class TeacherAnnouncementPage extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
-            // Logout logic
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) => TeacherHomePage(
-                        teacherId: teacherId, // Pass teacherId
-                        classId: classId,
-                      )),
+                builder: (context) => TeacherHomePage(
+                  teacherId: teacherId,
+                  classId: classId,
+                ),
+              ),
             );
           },
           icon: const Icon(Icons.arrow_back),
@@ -47,7 +48,7 @@ class TeacherAnnouncementPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              "Recent Announcements",
+              "Your Announcements",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -91,19 +92,16 @@ class TeacherAnnouncementPage extends StatelessWidget {
               onPressed: () async {
                 if (titleController.text.isNotEmpty &&
                     contentController.text.isNotEmpty) {
-                  // Save announcement to Firestore
                   await FirebaseFirestore.instance
                       .collection('announcements')
                       .add({
                     'title': titleController.text,
                     'content': contentController.text,
                     'timestamp': Timestamp.now(),
-                    'teacherId': teacherId, // Replace with current teacher ID
-                    'classId': classId, // Replace with the teacher's class ID
+                    'teacherId': teacherId, // Current teacher ID
+                    'classId': classId, // Teacher's class ID
                   });
-                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Announcement added!")),
                   );
@@ -122,7 +120,8 @@ class TeacherAnnouncementPage extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('announcements')
-          .orderBy('timestamp', descending: true)
+          .where('teacherId',
+              isEqualTo: teacherId) // Filter by current teacher ID
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
-//import 'package:collegeapp/pages/student_assignment_page.dart';
+import 'package:collegeapp/pages/student_assignment_page.dart';
+import 'package:collegeapp/pages/student_homework_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
@@ -189,13 +190,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   color: Colors.deepPurple.shade800,
                   onTap: () {
                     // Navigate to Assignments
-                    /*Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            StudentAssignmentsPage(classId: widget.classId),
+                            StudentAssignmentPage(classId: widget.classId),
                       ),
-                    );*/
+                    );
                   },
                 ),
                 _buildFeatureTile(
@@ -208,6 +209,23 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => RazorpayPage(
+                            classId: widget.classId,
+                            studentId: widget.studentId),
+                      ),
+                    );
+                  },
+                ),
+                _buildFeatureTile(
+                  title: "Homework",
+                  subtitle: "View your homework",
+                  icon: Icons.book,
+                  color: Colors.purpleAccent.shade700,
+                  onTap: () {
+                    // Navigate to Homework
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StudentHomeworkPage(
                             classId: widget.classId,
                             studentId: widget.studentId),
                       ),

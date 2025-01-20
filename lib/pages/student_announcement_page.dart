@@ -39,7 +39,7 @@ class StudentAnnouncementsPage extends StatelessWidget {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             // Log if no announcements are available
             _logger.w("No announcements found for classId: $classId");
-            return const Center(child: Text("No announcements available."));
+            return const Center(child: Text("No announcements available 📰"));
           }
 
           // Retrieve the list of announcements from the snapshot
@@ -56,25 +56,49 @@ class StudentAnnouncementsPage extends StatelessWidget {
             itemCount: announcements.length,
             itemBuilder: (context, index) {
               final announcement = announcements[index];
-              return Card(
-                margin: const EdgeInsets.all(8),
-                child: ListTile(
-                  title: Text(
-                    announcement['title'] ?? "Untitled",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    announcement['content'] ?? "No content available.",
-                  ),
-                  trailing: Text(
-                    (announcement['timestamp'] as Timestamp)
-                        .toDate()
-                        .toString(),
-                    style: const TextStyle(fontSize: 12),
+              return _buildAnimatedCard(announcement, index);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  // Function to build animated card with emoji and smooth animation
+  Widget _buildAnimatedCard(DocumentSnapshot announcement, int index) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: Duration(milliseconds: 500 + (index * 100)),
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: Card(
+              elevation: 6,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: const Icon(
+                  Icons.announcement,
+                  color: Colors.blue,
+                  size: 40,
+                ),
+                title: Text(
+                  "${announcement['title'] ?? 'No Title'} ", // Added emoji
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
-              );
-            },
+                subtitle: Text(
+                  "${announcement['content'] ?? 'No Content'} \n🗓️ ${(announcement['timestamp'] as Timestamp).toDate().toString()}", // Added emoji
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
           );
         },
       ),

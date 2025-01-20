@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:collegeapp/pages/teacher_assignment_page.dart';
+import 'package:collegeapp/pages/teacher_assignment_page.dart';
+import 'package:collegeapp/pages/teacher_homework_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/teacher_announcement_page.dart';
 import 'package:collegeapp/pages/teacher_time_table.dart';
@@ -307,14 +308,23 @@ class TeacherHomePage extends StatelessWidget {
                     )),
           );
         } else if (title == "Assignments") {
-          /*Navigator.pushReplacement(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => TeacherAssignmentPage(
                       teacherId: teacherId,
                       classId: classId,
                     )),
-          );*/
+          );
+        } else if (title == "Assign Homework") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TeacherHomeworkPage(
+                      teacherId: teacherId,
+                      classId: classId,
+                    )),
+          );
         }
       },
       child: Card(

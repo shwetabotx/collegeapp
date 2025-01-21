@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
+import 'package:collegeapp/pages/student_internal_exam_results.dart';
+//import 'package:collegeapp/pages/bus_map_page.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
 import 'package:collegeapp/pages/student_assignment_page.dart';
 import 'package:collegeapp/pages/student_homework_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
+import 'package:collegeapp/pages/sudent_links_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'razorpay_payment.dart';
@@ -100,7 +103,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     const CircleAvatar(
                       radius: 40,
                       backgroundImage: AssetImage(
-                          'lib/images/girl1.png'), // Add profile picture
+                          'lib/images/me2.png'), // Add profile picture
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -131,6 +134,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   color: Colors.deepPurple.shade300,
                   onTap: () {
                     // Navigate to Bus Tracking
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => BusMapPage(),
+                    //   ),
+                    // );
                   },
                 ),
                 _buildFeatureTile(
@@ -248,15 +257,28 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   color: Colors.purple.shade300,
                   onTap: () {
                     // Navigate to Important Links
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const StudentLinksPage()),
+                    );
                   },
                 ),
                 _buildFeatureTile(
-                  title: "Test Results",
+                  title: "Internal Exam Results",
                   subtitle: "View your academic progress",
                   icon: Icons.grade,
                   color: Colors.purpleAccent.shade700,
                   onTap: () {
                     // Navigate to Test Results
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => StudentInternalExamResultsPage(
+                                studentId: widget.studentId,
+                                classId: widget.classId,
+                              )),
+                    );
                   },
                 ),
               ],

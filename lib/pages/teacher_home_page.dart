@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/teacher_assignment_page.dart';
 import 'package:collegeapp/pages/teacher_homework_page.dart';
+import 'package:collegeapp/pages/teacher_test_marks_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/teacher_announcement_page.dart';
 import 'package:collegeapp/pages/teacher_time_table.dart';
@@ -94,7 +95,7 @@ class TeacherHomePage extends StatelessWidget {
                     children: [
                       const CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage('lib/images/girl1.png'),
+                        backgroundImage: AssetImage('lib/images/me2.png'),
                       ),
                       const SizedBox(height: 10),
                       Text(
@@ -214,7 +215,7 @@ class TeacherHomePage extends StatelessWidget {
                     Colors.teal, context),
                 _buildFeatureCard(
                     "Messages", Icons.message, Colors.cyan, context),
-                _buildFeatureCard("Test Marks", Icons.star,
+                _buildFeatureCard("Internal Marks", Icons.star,
                     const Color.fromARGB(255, 101, 47, 228), context),
               ],
             ),
@@ -321,6 +322,15 @@ class TeacherHomePage extends StatelessWidget {
             context,
             MaterialPageRoute(
                 builder: (context) => TeacherHomeworkPage(
+                      teacherId: teacherId,
+                      classId: classId,
+                    )),
+          );
+        } else if (title == "Internal Marks") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TeacherTestMarksPage(
                       teacherId: teacherId,
                       classId: classId,
                     )),

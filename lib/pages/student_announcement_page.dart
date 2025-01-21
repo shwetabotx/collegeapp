@@ -22,7 +22,7 @@ class StudentAnnouncementsPage extends StatelessWidget {
             .snapshots()
             .handleError((error) {
           // Log errors using logger
-          _logger.e("Error in announcements stream", error);
+          _logger.e("Error in announcements stream", error: error);
         }),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -31,7 +31,7 @@ class StudentAnnouncementsPage extends StatelessWidget {
           }
           if (snapshot.hasError) {
             // Log and display an error message
-            _logger.e("StreamBuilder error", snapshot.error);
+            _logger.e("StreamBuilder error", error: snapshot.error);
             return Center(
               child: Text("Error: ${snapshot.error}"),
             );

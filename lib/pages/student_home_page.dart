@@ -389,7 +389,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color.withOpacity(0.1),
             ),
             child: Icon(icon, size: 32, color: color),
           ),

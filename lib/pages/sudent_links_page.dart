@@ -126,7 +126,7 @@ class StudentLinksPageState extends State<StudentLinksPage>
               Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurpleAccent.withOpacity(0.1),
+                  //color: Colors.deepPurpleAccent.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(

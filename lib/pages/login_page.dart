@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'student_home_page.dart';
 import 'teacher_home_page.dart';
 import 'admin_home_page.dart';
+import 'driver_home_page.dart'; // Import DriverHomePage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -121,6 +122,28 @@ class _LoginPageState extends State<LoginPage> {
           );
           return;
         }
+      }
+
+      // Search for drivers in 'drivers' root collection
+      final driverQuerySnapshot = await FirebaseFirestore.instance
+          .collection('drivers')
+          .where('username', isEqualTo: username)
+          .where('password', isEqualTo: password)
+          .get();
+
+      if (driverQuerySnapshot.docs.isNotEmpty) {
+        if (mounted) Navigator.pop(context); // Remove loading indicator
+
+        final driverDoc = driverQuerySnapshot.docs.first;
+
+        // Navigate to Driver Home Page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DriverHomePage(driverId: driverDoc.id),
+          ),
+        );
+        return;
       }
 
       throw Exception('Invalid username or password.');

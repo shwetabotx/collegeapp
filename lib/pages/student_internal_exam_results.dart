@@ -15,24 +15,30 @@ class StudentInternalExamResultsPage extends StatefulWidget {
 
 class StudentInternalExamResultsPageState
     extends State<StudentInternalExamResultsPage> {
-  Map<String, dynamic>? studentMarks;
+  List<Map<String, dynamic>> studentMarks = [];
 
   // Fetch student marks from Firestore
   Future<void> _fetchMarks() async {
     try {
-      // Get marks from the 'marks' collection for the student
       var marksSnapshot = await FirebaseFirestore.instance
-          .collection('marks') // Root collection for marks
-          .doc(widget.studentId) // Document for the current student
+          .collection('classes')
+          .doc(widget.classId)
+          .collection('students')
+          .doc(widget.studentId)
+          .collection('marks')
+          .doc('internal_exam')
           .get();
 
       if (marksSnapshot.exists) {
-        setState(() {
-          studentMarks = marksSnapshot.data();
-        });
+        var data = marksSnapshot.data();
+        if (data != null && data.containsKey('marks')) {
+          setState(() {
+            studentMarks = List<Map<String, dynamic>>.from(data['marks']);
+          });
+        }
       } else {
         setState(() {
-          studentMarks = null; // No marks available
+          studentMarks = [];
         });
       }
     } catch (e) {
@@ -69,32 +75,75 @@ class StudentInternalExamResultsPageState
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: studentMarks == null
+        child: studentMarks.isEmpty
             ? Center(
                 child: Text(
                   'No results available for this student yet.',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               )
-            : studentMarks!.isEmpty
-                ? Center(
-                    child: Text(
-                      'No marks have been uploaded for this student.',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Your Internal Exam Results:',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: studentMarks!.length,
-                    itemBuilder: (context, index) {
-                      String subject = studentMarks!.keys.elementAt(index);
-                      dynamic marks = studentMarks![subject];
-                      return ListTile(
-                        title: Text(subject),
-                        subtitle: Text('Marks: $marks'),
-                      );
-                    },
                   ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: studentMarks.length,
+                      itemBuilder: (context, index) {
+                        var entry = studentMarks[index];
+                        return Card(
+                          elevation: 3,
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 4,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.blueAccent,
+                              child: Text(
+                                entry['subject'][0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              entry['subject'],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Marks: ${entry['marks']}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

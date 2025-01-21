@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class StudentLinksPage extends StatefulWidget {
-  const StudentLinksPage({super.key});
+  const StudentLinksPage(
+      {super.key, required this.classId, required this.studentId});
+
+  final String classId;
+  final String studentId;
 
   @override
   StudentLinksPageState createState() => StudentLinksPageState();
@@ -51,8 +55,8 @@ class StudentLinksPageState extends State<StudentLinksPage>
               context,
               MaterialPageRoute(
                 builder: (context) => StudentHomePage(
-                  classId: '',
-                  studentId: '',
+                  classId: widget.classId,
+                  studentId: widget.studentId,
                 ),
               ),
             );

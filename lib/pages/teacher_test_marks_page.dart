@@ -18,8 +18,7 @@ class TeacherTestMarksPageState extends State<TeacherTestMarksPage> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _marksController = TextEditingController();
   List<Map<String, dynamic>> subjectMarksList = []; // Store subjects and marks
-
-  List<String> students = [];
+  List<Map<String, dynamic>> students = []; // List of students with ID and name
 
   // Fetch students from Firestore
   Future<void> _fetchStudents() async {
@@ -31,8 +30,9 @@ class TeacherTestMarksPageState extends State<TeacherTestMarksPage> {
           .get();
 
       setState(() {
-        students =
-            studentSnapshot.docs.map((doc) => doc['name'] as String).toList();
+        students = studentSnapshot.docs
+            .map((doc) => {'id': doc.id, 'name': doc['name'] as String})
+            .toList();
       });
     } catch (e) {
       debugPrint("Error fetching students: $e");
@@ -69,22 +69,22 @@ class TeacherTestMarksPageState extends State<TeacherTestMarksPage> {
       Map<String, dynamic> marksData = {
         'teacherId': widget.teacherId,
         'timestamp': FieldValue.serverTimestamp(),
+        'marks': subjectMarksList,
       };
 
-      // Add all subjects and their corresponding marks to the data
-      for (var entry in subjectMarksList) {
-        marksData[entry['subject']] = entry['marks'];
-      }
-
-      // Save to Firestore under the 'marks' collection
+      // Save to Firestore under the specified student in the 'marks' subcollection
       await FirebaseFirestore.instance
-          .collection('marks')
-          .doc(_selectedStudent)
+          .collection('classes') // Root collection
+          .doc(widget.classId) // Class document
+          .collection('students') // Students subcollection
+          .doc(_selectedStudent) // Specific student document
+          .collection('marks') // Marks subcollection
+          .doc('internal_exam') // Example: 'internal_exam' as a single document
           .set(marksData, SetOptions(merge: true));
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Marks for $_selectedStudent saved successfully')),
+            content: Text('Marks for ${_selectedStudent!} saved successfully')),
       );
 
       // Clear the input fields and subjectMarksList after saving
@@ -114,14 +114,14 @@ class TeacherTestMarksPageState extends State<TeacherTestMarksPage> {
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
+            // Logout logic
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => TeacherHomePage(
-                  teacherId: widget.teacherId,
-                  classId: widget.classId,
-                ),
-              ),
+                  builder: (context) => TeacherHomePage(
+                        teacherId: widget.teacherId, // Pass teacherId
+                        classId: widget.classId,
+                      )),
             );
           },
           icon: const Icon(Icons.arrow_back),
@@ -156,9 +156,9 @@ class TeacherTestMarksPageState extends State<TeacherTestMarksPage> {
                         fillColor: Colors.white,
                       ),
                       items: students.map((student) {
-                        return DropdownMenuItem(
-                          value: student,
-                          child: Text(student),
+                        return DropdownMenuItem<String>(
+                          value: student['id'] as String,
+                          child: Text(student['name'] as String),
                         );
                       }).toList(),
                     ),

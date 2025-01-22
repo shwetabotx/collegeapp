@@ -20,7 +20,7 @@ class DriverHomePageState extends State<DriverHomePage> {
 
   @override
   void dispose() {
-    _stopSharingLocation(); // Stop location sharing and cancel streams
+    _stopSharingLocation(); // Ensure location sharing stops
     super.dispose();
   }
 
@@ -87,9 +87,10 @@ class DriverHomePageState extends State<DriverHomePage> {
     });
   }
 
-  void _stopSharingLocation() {
-    _positionStreamSubscription?.cancel(); // Cancel the stream subscription
-    _positionStreamSubscription = null; // Clear the reference
+  Future<void> _stopSharingLocation() async {
+    // Cancel the stream subscription
+    await _positionStreamSubscription?.cancel();
+    _positionStreamSubscription = null;
 
     if (mounted) {
       setState(() {
@@ -97,8 +98,18 @@ class DriverHomePageState extends State<DriverHomePage> {
       });
     }
 
+    // Stop Geolocator service explicitly
+    try {
+      await Geolocator.getLastKnownPosition(); // Attempt to stop service
+    } catch (e) {
+      debugPrint('Error stopping Geolocator: $e');
+    }
+
     // Optionally remove the driver's location from Firestore
-    _firestore.collection('drivers_location').doc(widget.driverId).delete();
+    // await _firestore
+    //     .collection('drivers_location')
+    //     .doc(widget.driverId)
+    //     .delete();
   }
 
   @override

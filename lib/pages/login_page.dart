@@ -48,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
               builder: (context) => StudentHomePage(
                 classId: userDoc['classId'],
                 studentId: userDoc.id,
+                driverId: userDoc['driverId'], // Pass driverId here
               ),
             ),
           );
@@ -117,6 +118,8 @@ class _LoginPageState extends State<LoginPage> {
               builder: (context) => StudentHomePage(
                 classId: classDoc.id,
                 studentId: studentDoc.id,
+                driverId:
+                    studentDoc['driverId'], // Fetch driverId from Firestore
               ),
             ),
           );

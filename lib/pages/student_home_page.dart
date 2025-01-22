@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
+import 'package:collegeapp/pages/driver_location_map_page.dart';
 import 'package:collegeapp/pages/student_internal_exam_results.dart';
 //import 'package:collegeapp/pages/bus_map_page.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
@@ -14,11 +15,13 @@ import 'razorpay_payment.dart';
 class StudentHomePage extends StatefulWidget {
   final String classId;
   final String studentId;
+  final String driverId;
 
   const StudentHomePage({
     super.key,
     required this.classId,
     required this.studentId,
+    required this.driverId,
   });
 
   @override
@@ -211,13 +214,15 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   icon: Icons.directions_bus,
                   color: Colors.deepPurple.shade300,
                   onTap: () {
-                    // Navigate to Bus Tracking
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => BusMapPage(),
-                    //   ),
-                    // );
+                    // Navigate to map page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DriverLocationMapPage(
+                          driverId: widget.driverId,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 _buildFeatureTile(

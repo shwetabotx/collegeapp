@@ -1,6 +1,8 @@
+import 'package:collegeapp/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
 class DriverHomePage extends StatefulWidget {
   const DriverHomePage({super.key, required this.driverId});
@@ -14,20 +16,23 @@ class DriverHomePageState extends State<DriverHomePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Position? _currentPosition;
   bool _isSharing = false;
+  StreamSubscription<Position>? _positionStreamSubscription;
 
   @override
   void dispose() {
+    _stopSharingLocation(); // Stop location sharing and cancel streams
     super.dispose();
-    _stopSharingLocation();
   }
 
   Future<void> _startSharingLocation() async {
     // Check location services and permissions
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location services are disabled.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location services are disabled.')),
+        );
+      }
       return;
     }
 
@@ -35,36 +40,45 @@ class DriverHomePageState extends State<DriverHomePage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Location permissions are denied.')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied.')),
+          );
+        }
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location permissions are permanently denied.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Location permissions are permanently denied.')),
+        );
+      }
       return;
     }
 
-    setState(() {
-      _isSharing = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isSharing = true;
+      });
+    }
 
     // Stream location updates and send to Firestore
-    Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
+    _positionStreamSubscription = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 10, // Update every 10 meters
       ),
     ).listen((Position position) {
-      setState(() {
-        _currentPosition = position;
-      });
+      if (mounted) {
+        setState(() {
+          _currentPosition = position;
+        });
+      }
 
-      // Send GPS data to Firestore with the actual driver ID
+      // Send GPS data to Firestore
       _firestore.collection('drivers_location').doc(widget.driverId).set({
         'latitude': position.latitude,
         'longitude': position.longitude,
@@ -74,9 +88,15 @@ class DriverHomePageState extends State<DriverHomePage> {
   }
 
   void _stopSharingLocation() {
-    setState(() {
-      _isSharing = false;
-    });
+    _positionStreamSubscription?.cancel(); // Cancel the stream subscription
+    _positionStreamSubscription = null; // Clear the reference
+
+    if (mounted) {
+      setState(() {
+        _isSharing = false;
+      });
+    }
+
     // Optionally remove the driver's location from Firestore
     _firestore.collection('drivers_location').doc(widget.driverId).delete();
   }
@@ -85,27 +105,38 @@ class DriverHomePageState extends State<DriverHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Driver Dashboard'),
+        title: const Text('Driver Dashboard'),
         actions: [
           if (_isSharing)
             IconButton(
-              icon: Icon(Icons.stop),
+              icon: const Icon(Icons.stop),
               onPressed: _stopSharingLocation,
             ),
         ],
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginPage(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _currentPosition == null
-                ? Text('Waiting for GPS...')
+                ? const Text('Waiting for GPS...')
                 : Text(
                     'Latitude: ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}'),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isSharing ? null : _startSharingLocation,
-              child: Text('Start Sharing Location'),
+              child: const Text('Start Sharing Location'),
             ),
           ],
         ),

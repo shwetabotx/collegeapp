@@ -57,6 +57,7 @@ class StudentLinksPageState extends State<StudentLinksPage>
                 builder: (context) => StudentHomePage(
                   classId: widget.classId,
                   studentId: widget.studentId,
+                  driverId: '',
                 ),
               ),
             );

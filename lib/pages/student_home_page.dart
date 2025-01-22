@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collegeapp/pages/about_devlopers_page.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
 import 'package:collegeapp/pages/driver_location_map_page.dart';
 import 'package:collegeapp/pages/student_internal_exam_results.dart';
@@ -122,6 +123,20 @@ class _StudentHomePageState extends State<StudentHomePage> {
               title: const Text("About Us"),
               onTap: () {
                 // Navigate to About Us Page
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group),
+              title: const Text("About Devlopers"),
+              onTap: () {
+                // Navigate to About Us Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AboutDevelopersPage(
+                        classId: widget.classId, studentId: widget.studentId),
+                  ),
+                );
               },
             ),
             ListTile(

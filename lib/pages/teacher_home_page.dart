@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:collegeapp/pages/major_selection_assignment_page.dart';
 import 'package:collegeapp/pages/teacher_assignment_page.dart';
 import 'package:collegeapp/pages/teacher_homework_page.dart';
 import 'package:collegeapp/pages/teacher_test_marks_page.dart';
@@ -333,6 +334,9 @@ class TeacherHomePage extends StatelessWidget {
                 builder: (context) => TeacherAssignmentPage(
                       teacherId: teacherId,
                       classId: classId,
+                      currentClassId: '',
+                      major: '',
+                      year: '',
                     )),
           );
         } else if (title == "Assign Homework") {

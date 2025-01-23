@@ -71,7 +71,7 @@ class AboutDevelopersPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              ...developers.map((dev) => _buildDeveloperCard(dev)).toList(),
+              ...developers.map((dev) => _buildDeveloperCard(dev)),
             ],
           ),
         ),

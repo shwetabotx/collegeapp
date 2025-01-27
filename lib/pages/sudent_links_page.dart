@@ -46,9 +46,13 @@ class StudentLinksPageState extends State<StudentLinksPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Student Links"),
+        title: const Text(
+          "Student Links",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.deepPurple,
         centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(

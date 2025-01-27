@@ -2,69 +2,45 @@ import 'package:collegeapp/pages/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class TeacherHomeworkPage extends StatelessWidget {
+class TeacherHomeworkPage extends StatefulWidget {
   final String teacherId;
   final String classId;
 
   const TeacherHomeworkPage({
     super.key,
     required this.teacherId,
+    required String currentClassId,
+    required String major,
+    required String year,
     required this.classId,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Homework 📝"),
-        backgroundColor: Colors.deepPurple,
-        centerTitle: true,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TeacherHomePage(
-                  teacherId: teacherId,
-                  classId: classId,
-                ),
-              ),
-            );
-          },
-          icon: const Icon(Icons.arrow_back),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              "Submit Homework 📝",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                _showAddHomeworkDialog(context);
-              },
-              child: const Text("Add Homework ➕"),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Assigned Homework 📑",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _buildAssignedHomeworkList(),
-          ],
-        ),
-      ),
-    );
+  TeacherHomeworkPageState createState() => TeacherHomeworkPageState();
+}
+
+class TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
+  List<String> classIds = [];
+  String? selectedClassId;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchClassIds();
   }
 
-  // Function to display the "Add Homework" dialog
-  void _showAddHomeworkDialog(BuildContext context) {
+  Future<void> _fetchClassIds() async {
+    final classesSnapshot =
+        await FirebaseFirestore.instance.collection('classes').get();
+    setState(() {
+      classIds = classesSnapshot.docs.map((doc) => doc.id).toList();
+      if (classIds.isNotEmpty) {
+        selectedClassId = classIds.first;
+      }
+    });
+  }
+
+  void _showAddHomeworkDialog() {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
     final TextEditingController dueDateController = TextEditingController();
@@ -73,7 +49,7 @@ class TeacherHomeworkPage extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Add Homework 📚"),
+          title: const Text("Add Homework"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -103,23 +79,26 @@ class TeacherHomeworkPage extends StatelessWidget {
               onPressed: () async {
                 if (titleController.text.isNotEmpty &&
                     descriptionController.text.isNotEmpty &&
-                    dueDateController.text.isNotEmpty) {
-                  // Save homework to Firestore
-                  await FirebaseFirestore.instance.collection('homework').add({
+                    dueDateController.text.isNotEmpty &&
+                    selectedClassId != null) {
+                  await FirebaseFirestore.instance
+                      .collection('classes')
+                      .doc(selectedClassId)
+                      .collection('homework')
+                      .add({
                     'title': titleController.text,
                     'description': descriptionController.text,
                     'dueDate': dueDateController.text,
+                    'teacherId': widget.teacherId,
                     'timestamp': Timestamp.now(),
-                    'teacherId': teacherId,
-                    'classId': classId,
                   });
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Homework added! 🎉")),
+                    const SnackBar(content: Text("Homework added!")),
                   );
                 }
               },
-              child: const Text("Add Homework"),
+              child: const Text("Add"),
             ),
           ],
         );
@@ -127,20 +106,24 @@ class TeacherHomeworkPage extends StatelessWidget {
     );
   }
 
-  // Function to display the list of assigned homework with animations and emojis
-  Widget _buildAssignedHomeworkList() {
+  Widget _buildHomeworkList() {
+    if (selectedClassId == null) {
+      return const Center(child: Text("No class selected."));
+    }
+
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
+          .collection('classes')
+          .doc(selectedClassId)
           .collection('homework')
-          .where('teacherId', isEqualTo: teacherId)
-          .where('classId', isEqualTo: classId)
+          .orderBy('timestamp', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text("No homework assigned yet. 🥳"));
+          return const Center(child: Text("No homework available."));
         }
         return ListView.builder(
           shrinkWrap: true,
@@ -148,56 +131,82 @@ class TeacherHomeworkPage extends StatelessWidget {
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
             final homework = snapshot.data!.docs[index];
-            return _buildAnimatedCard(homework, index);
+            return Card(
+              child: ListTile(
+                title: Text(homework['title']),
+                subtitle: Text(
+                  "${homework['description']}\nDue: ${homework['dueDate']}",
+                ),
+              ),
+            );
           },
         );
       },
     );
   }
 
-  // Function to build animated card with delete button
-  Widget _buildAnimatedCard(DocumentSnapshot homework, int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0.0, end: 1.0),
-        duration: Duration(milliseconds: 300 + (index * 100)),
-        builder: (context, value, child) {
-          return Transform.scale(
-            scale: value,
-            child: Card(
-              elevation: 6,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: const Icon(Icons.book, color: Colors.blue, size: 40),
-                title: Text(
-                  homework['title'] ?? 'No Title',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                subtitle: Text(
-                  "${homework['description'] ?? 'No Description'}\n🗓️ Due Date: ${homework['dueDate'] ?? 'No Due Date'}",
-                  style: const TextStyle(fontSize: 14),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    // Delete homework from Firestore
-                    await FirebaseFirestore.instance
-                        .collection('homework')
-                        .doc(homework.id)
-                        .delete();
-                  },
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Teacher Homework"),
+        backgroundColor: Colors.blue,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TeacherHomePage(
+                  teacherId: widget.teacherId,
+                  classId: widget.classId,
                 ),
               ),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              "Select Class",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          );
-        },
+            const SizedBox(height: 8),
+            classIds.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : DropdownButton<String>(
+                    value: selectedClassId,
+                    isExpanded: true,
+                    items: classIds.map((classId) {
+                      return DropdownMenuItem(
+                        value: classId,
+                        child: Text(classId),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedClassId = value;
+                      });
+                    },
+                  ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _showAddHomeworkDialog,
+              child: const Text("Add Homework"),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "Homework for Selected Class",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            _buildHomeworkList(),
+          ],
+        ),
       ),
     );
   }

@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:collegeapp/pages/major_selection_assignment_page.dart';
+import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/teacher_assignment_page.dart';
 import 'package:collegeapp/pages/teacher_homework_page.dart';
+import 'package:collegeapp/pages/teacher_profile_page.dart';
 import 'package:collegeapp/pages/teacher_test_marks_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/teacher_announcement_page.dart';
@@ -107,17 +108,36 @@ class TeacherHomePage extends StatelessWidget {
                   ),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.home),
-                  title: const Text("Home"),
+                  leading: const Icon(Icons.person),
+                  title: const Text("Profile"),
                   onTap: () {
-                    Navigator.pop(context);
+                    // Navigate to profile page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TeacherProfilePage(
+                          classId: classId,
+                          teacherId: teacherId,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.person),
-                  title: const Text("My Profile"),
+                  leading: const Icon(Icons.group),
+                  title: const Text("About Devlopers"),
                   onTap: () {
-                    // Navigate to profile page
+                    // Navigate to About Us Page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AboutDevelopersPage(
+                          classId: classId,
+                          teacherId: teacherId,
+                          studentId: '',
+                        ),
+                      ),
+                    );
                   },
                 ),
                 ListTile(
@@ -346,6 +366,9 @@ class TeacherHomePage extends StatelessWidget {
                 builder: (context) => TeacherHomeworkPage(
                       teacherId: teacherId,
                       classId: classId,
+                      currentClassId: '',
+                      major: '',
+                      year: '',
                     )),
           );
         } else if (title == "Internal Marks") {

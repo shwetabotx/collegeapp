@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collegeapp/pages/about_devlopers_page.dart';
+import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
 import 'package:collegeapp/pages/driver_location_map_page.dart';
 import 'package:collegeapp/pages/student_internal_exam_results.dart';
-//import 'package:collegeapp/pages/bus_map_page.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
 import 'package:collegeapp/pages/student_assignment_page.dart';
 import 'package:collegeapp/pages/student_homework_page.dart';
+import 'package:collegeapp/pages/student_profile_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
 import 'package:collegeapp/pages/sudent_links_page.dart';
 import 'package:flutter/material.dart';
@@ -109,6 +109,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
               title: const Text("Profile"),
               onTap: () {
                 // Navigate to Profile Page
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => StudentProfilePage(
+                      classId: widget.classId,
+                      studentId: widget.studentId,
+                      driverId: '',
+                    ),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -134,7 +144,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => AboutDevelopersPage(
-                        classId: widget.classId, studentId: widget.studentId),
+                      classId: widget.classId,
+                      studentId: widget.studentId,
+                      teacherId: '',
+                    ),
                   ),
                 );
               },
@@ -235,6 +248,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       MaterialPageRoute(
                         builder: (context) => DriverLocationMapPage(
                           driverId: widget.driverId,
+                          studentId: widget.studentId,
+                          classId: widget.classId,
                         ),
                       ),
                     );
@@ -269,6 +284,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       MaterialPageRoute(
                         builder: (context) => StudentTimeTablePage(
                           classId: widget.classId,
+                          studentId: widget.studentId,
                         ),
                       ),
                     );
@@ -284,8 +300,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            StudentAnnouncementsPage(classId: widget.classId),
+                        builder: (context) => StudentAnnouncementsPage(
+                          classId: widget.classId,
+                          studentId: widget.studentId,
+                        ),
                       ),
                     );
                   },
@@ -300,8 +318,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            StudentAssignmentPage(classId: widget.classId),
+                        builder: (context) => StudentAssignmentPage(
+                          classId: widget.classId,
+                          studentId: widget.studentId,
+                        ),
                       ),
                     );
                   },

@@ -1,17 +1,39 @@
+import 'package:collegeapp/pages/student_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class StudentAssignmentPage extends StatelessWidget {
   final String classId;
+  final String studentId;
 
-  const StudentAssignmentPage({super.key, required this.classId});
+  const StudentAssignmentPage(
+      {super.key, required this.classId, required this.studentId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Student Assignments"),
-        backgroundColor: Colors.deepOrange,
+        title: const Text(
+          "Student Assignments",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.deepPurple,
+        iconTheme: IconThemeData(color: Colors.white),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StudentHomePage(
+                  classId: classId,
+                  studentId: studentId,
+                  driverId: '',
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance

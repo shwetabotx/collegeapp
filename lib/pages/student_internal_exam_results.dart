@@ -56,8 +56,13 @@ class StudentInternalExamResultsPageState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Internal Exam Results"),
+        title: const Text(
+          "Internal Exam Results",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.deepPurple,
         centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(

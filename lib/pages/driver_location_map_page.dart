@@ -1,3 +1,4 @@
+import 'package:collegeapp/pages/student_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,8 +7,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class DriverLocationMapPage extends StatefulWidget {
-  const DriverLocationMapPage({super.key, required this.driverId});
+  const DriverLocationMapPage(
+      {super.key,
+      required this.driverId,
+      required this.studentId,
+      required this.classId});
   final String driverId;
+  final String studentId;
+  final String classId;
 
   @override
   DriverLocationMapPageState createState() => DriverLocationMapPageState();
@@ -76,7 +83,27 @@ class DriverLocationMapPageState extends State<DriverLocationMapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Driver Location Map'),
+        title: Text(
+          'Driver Location Map',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.deepPurple,
+        iconTheme: IconThemeData(color: Colors.white),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StudentHomePage(
+                  classId: widget.classId,
+                  studentId: widget.studentId,
+                  driverId: '',
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: _isLocationFetched
           ? FlutterMap(

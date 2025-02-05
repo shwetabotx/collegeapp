@@ -9,6 +9,7 @@ import 'package:collegeapp/pages/student_homework_page.dart';
 import 'package:collegeapp/pages/student_profile_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
 import 'package:collegeapp/pages/sudent_links_page.dart';
+import 'package:collegeapp/pages/view_resources_page.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'razorpay_payment.dart';
@@ -360,12 +361,21 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   },
                 ),
                 _buildFeatureTile(
-                  title: "Student Discussion",
-                  subtitle: "Collaborate with peers",
-                  icon: Icons.forum,
+                  title: "View Resources",
+                  subtitle: "Get your resources on a click!",
+                  icon: Icons.note,
                   color: Colors.deepPurple.shade600,
                   onTap: () {
-                    // Navigate to Student Discussion
+                    // Navigate to View Resources
+                    // Navigate to Important Links
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ViewResourcesPage(
+                                classId: widget.classId,
+                                studentId: widget.studentId,
+                              )),
+                    );
                   },
                 ),
                 _buildFeatureTile(

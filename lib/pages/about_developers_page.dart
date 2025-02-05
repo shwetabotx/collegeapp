@@ -19,7 +19,7 @@ class AboutDevelopersPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Our Developers',
+              'Developers',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

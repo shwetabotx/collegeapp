@@ -4,6 +4,7 @@ import 'package:collegeapp/pages/teacher_assignment_page.dart';
 import 'package:collegeapp/pages/teacher_homework_page.dart';
 import 'package:collegeapp/pages/teacher_profile_page.dart';
 import 'package:collegeapp/pages/teacher_test_marks_page.dart';
+import 'package:collegeapp/pages/upload_resources_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/teacher_announcement_page.dart';
 import 'package:collegeapp/pages/teacher_time_table.dart';
@@ -376,6 +377,15 @@ class TeacherHomePage extends StatelessWidget {
             context,
             MaterialPageRoute(
                 builder: (context) => TeacherTestMarksPage(
+                      teacherId: teacherId,
+                      classId: classId,
+                    )),
+          );
+        } else if (title == "Upload Resources") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => UploadResourcesPage(
                       teacherId: teacherId,
                       classId: classId,
                     )),

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/teacher_assignment_page.dart';
 import 'package:collegeapp/pages/teacher_homework_page.dart';
+import 'package:collegeapp/pages/teacher_post_page.dart';
 import 'package:collegeapp/pages/teacher_profile_page.dart';
 import 'package:collegeapp/pages/teacher_test_marks_page.dart';
 import 'package:collegeapp/pages/upload_resources_page.dart';
@@ -257,6 +258,8 @@ class TeacherHomePage extends StatelessWidget {
                     "Messages", Icons.message, Colors.cyan, context),
                 _buildFeatureCard("Internal Marks", Icons.star,
                     const Color.fromARGB(255, 101, 47, 228), context),
+                _buildFeatureCard("Discussion Corner", Icons.message,
+                    const Color.fromARGB(255, 101, 47, 228), context),
               ],
             ),
             const SizedBox(height: 24),
@@ -386,6 +389,15 @@ class TeacherHomePage extends StatelessWidget {
             context,
             MaterialPageRoute(
                 builder: (context) => UploadResourcesPage(
+                      teacherId: teacherId,
+                      classId: classId,
+                    )),
+          );
+        } else if (title == "Discussion Corner") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TeacherPostPage(
                       teacherId: teacherId,
                       classId: classId,
                     )),

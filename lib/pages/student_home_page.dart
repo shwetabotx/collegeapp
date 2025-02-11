@@ -292,6 +292,24 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   },
                 ),
                 _buildFeatureTile(
+                  title: "Discussion Corner",
+                  subtitle: "Discuss",
+                  icon: Icons.chat,
+                  color: Colors.deepPurple.shade400,
+                  onTap: () {
+                    // Navigate to Time-Table
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => StudentPostPage(
+                    //       classId: widget.classId,
+                    //       studentId: widget.studentId,
+                    //     ),
+                    //   ),
+                    // );
+                  },
+                ),
+                _buildFeatureTile(
                   title: "Announcements",
                   subtitle: "View important updates",
                   icon: Icons.announcement,

@@ -358,9 +358,9 @@ class TeacherHomePage extends StatelessWidget {
                 builder: (context) => TeacherAssignmentPage(
                       teacherId: teacherId,
                       classId: classId,
-                      currentClassId: '',
-                      major: '',
-                      year: '',
+                      // currentClassId: '',
+                      // major: '',
+                      // year: '',
                     )),
           );
         } else if (title == "Assign Homework") {

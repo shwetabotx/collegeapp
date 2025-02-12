@@ -1,18 +1,17 @@
 import 'package:collegeapp/pages/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // Import for date formatting
 
 class TeacherAssignmentPage extends StatefulWidget {
   final String teacherId;
   final String classId;
 
-  const TeacherAssignmentPage(
-      {super.key,
-      required this.teacherId,
-      required String currentClassId,
-      required String major,
-      required String year,
-      required this.classId});
+  const TeacherAssignmentPage({
+    super.key,
+    required this.teacherId,
+    required this.classId,
+  });
 
   @override
   TeacherAssignmentPageState createState() => TeacherAssignmentPageState();
@@ -21,6 +20,7 @@ class TeacherAssignmentPage extends StatefulWidget {
 class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
   List<String> classIds = [];
   String? selectedClassId;
+  DateTime? selectedDueDate; // Store the selected date
 
   @override
   void initState() {
@@ -39,10 +39,24 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
     });
   }
 
+  // Function to show date picker
+  Future<void> _selectDueDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(), // Prevent selecting past dates
+      lastDate: DateTime(2100),
+    );
+    if (pickedDate != null && pickedDate != selectedDueDate) {
+      setState(() {
+        selectedDueDate = pickedDate;
+      });
+    }
+  }
+
   void _showAddAssignmentDialog() {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
-    final TextEditingController dueDateController = TextEditingController();
 
     showDialog(
       context: context,
@@ -61,11 +75,12 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
                 decoration: const InputDecoration(labelText: "Description"),
                 maxLines: 3,
               ),
-              TextField(
-                controller: dueDateController,
-                decoration:
-                    const InputDecoration(labelText: "Due Date (YYYY-MM-DD)"),
-                keyboardType: TextInputType.datetime,
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => _selectDueDate(context),
+                child: Text(selectedDueDate == null
+                    ? "Select Due Date"
+                    : "Due Date: ${DateFormat('yyyy-MM-dd').format(selectedDueDate!)}"),
               ),
             ],
           ),
@@ -78,7 +93,7 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
               onPressed: () async {
                 if (titleController.text.isNotEmpty &&
                     descriptionController.text.isNotEmpty &&
-                    dueDateController.text.isNotEmpty &&
+                    selectedDueDate != null &&
                     selectedClassId != null) {
                   await FirebaseFirestore.instance
                       .collection('classes')
@@ -87,7 +102,8 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
                       .add({
                     'title': titleController.text,
                     'description': descriptionController.text,
-                    'dueDate': dueDateController.text,
+                    'dueDate': Timestamp.fromDate(
+                        selectedDueDate!), // Store as Timestamp
                     'teacherId': widget.teacherId,
                     'timestamp': Timestamp.now(),
                   });
@@ -130,11 +146,17 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
             final assignment = snapshot.data!.docs[index];
+
+            // Convert Timestamp to readable Date
+            Timestamp dueDateTimestamp = assignment['dueDate'];
+            String formattedDueDate =
+                DateFormat('yyyy-MM-dd').format(dueDateTimestamp.toDate());
+
             return Card(
               child: ListTile(
                 title: Text(assignment['title']),
                 subtitle: Text(
-                  "${assignment['description']}\nDue: ${assignment['dueDate']}",
+                  "${assignment['description']}\nDue: $formattedDueDate",
                 ),
               ),
             );

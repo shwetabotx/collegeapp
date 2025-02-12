@@ -32,7 +32,7 @@ class TeacherProfilePage extends StatelessWidget {
           "Teacher Profile",
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.green,
         iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
           onPressed: () {
@@ -76,7 +76,7 @@ class TeacherProfilePage extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 40,
-                          backgroundColor: Colors.deepPurple,
+                          backgroundColor: Colors.green,
                           child: const Icon(
                             Icons.person,
                             size: 40,
@@ -141,7 +141,7 @@ class TeacherProfilePage extends StatelessWidget {
                           value: convertToString(teacherData['teacherId']),
                         ),
                         ProfileDetailRow(
-                          icon: Icons.book,
+                          icon: Icons.school,
                           label: "Department",
                           value: convertToString(teacherData['department']),
                         ),
@@ -176,7 +176,7 @@ class ProfileDetailRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.deepPurple),
+          Icon(icon, color: Colors.green),
           const SizedBox(width: 16),
           Expanded(
             child: Text(

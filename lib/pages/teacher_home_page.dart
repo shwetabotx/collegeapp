@@ -241,7 +241,7 @@ class TeacherHomePage extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 _buildFeatureCard(
-                    "Manage Classes", Icons.class_, Colors.blue, context),
+                    "Manage Tasks", Icons.list_alt, Colors.blue, context),
                 _buildFeatureCard("Mark Attendance", Icons.check_circle,
                     Colors.orange, context),
                 _buildFeatureCard("Announcement", Icons.announcement,
@@ -251,14 +251,14 @@ class TeacherHomePage extends StatelessWidget {
                 _buildFeatureCard("Assign Homework", Icons.assignment,
                     Colors.purple, context),
                 _buildFeatureCard(
-                    "Assignments", Icons.grade, Colors.red, context),
-                _buildFeatureCard("Upload Resources", Icons.upload_file,
-                    Colors.teal, context),
+                    "Assignments", Icons.menu_book, Colors.red, context),
                 _buildFeatureCard(
-                    "Messages", Icons.message, Colors.cyan, context),
+                    "Upload Resources", Icons.note, Colors.teal, context),
+                //_buildFeatureCard(
+                //"Messages", Icons.message, Colors.cyan, context),
                 _buildFeatureCard("Internal Marks", Icons.star,
                     const Color.fromARGB(255, 101, 47, 228), context),
-                _buildFeatureCard("Discussion Corner", Icons.message,
+                _buildFeatureCard("Discussion Corner", Icons.chat,
                     const Color.fromARGB(255, 101, 47, 228), context),
               ],
             ),

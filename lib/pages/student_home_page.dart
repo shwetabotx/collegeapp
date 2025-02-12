@@ -6,6 +6,7 @@ import 'package:collegeapp/pages/student_internal_exam_results.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
 import 'package:collegeapp/pages/student_assignment_page.dart';
 import 'package:collegeapp/pages/student_homework_page.dart';
+import 'package:collegeapp/pages/student_post_page.dart';
 import 'package:collegeapp/pages/student_profile_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
 import 'package:collegeapp/pages/sudent_links_page.dart';
@@ -297,16 +298,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   icon: Icons.chat,
                   color: Colors.deepPurple.shade400,
                   onTap: () {
-                    // Navigate to Time-Table
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => StudentPostPage(
-                    //       classId: widget.classId,
-                    //       studentId: widget.studentId,
-                    //     ),
-                    //   ),
-                    // );
+                    //Navigate to Time-Table
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StudentPostPage(
+                          classId: widget.classId,
+                          studentId: widget.studentId,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 _buildFeatureTile(
@@ -330,7 +331,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 _buildFeatureTile(
                   title: "Assignments",
                   subtitle: "Track your assignments",
-                  icon: Icons.assignment,
+                  icon: Icons.menu_book,
                   color: Colors.deepPurple.shade800,
                   onTap: () {
                     // Navigate to Assignments
@@ -364,7 +365,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 _buildFeatureTile(
                   title: "Homework",
                   subtitle: "View your homework",
-                  icon: Icons.book,
+                  icon: Icons.assignment,
                   color: Colors.purpleAccent.shade700,
                   onTap: () {
                     // Navigate to Homework
@@ -398,7 +399,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 ),
                 _buildFeatureTile(
                   title: "Important Links",
-                  subtitle: "Access useful resources",
+                  subtitle: "Access useful resources' links",
                   icon: Icons.link,
                   color: Colors.purple.shade300,
                   onTap: () {

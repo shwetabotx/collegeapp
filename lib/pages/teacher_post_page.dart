@@ -190,6 +190,30 @@ class PostsList extends StatelessWidget {
     return "Unknown Teacher";
   }
 
+  Future<void> _deletePost(String postId, BuildContext context) async {
+    try {
+      // Delete the post
+      await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
+
+      // Optionally, delete all comments associated with this post
+      var comments = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .collection('comments')
+          .get();
+
+      for (var comment in comments.docs) {
+        await comment.reference.delete();
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Post deleted successfully!")),
+      );
+    } catch (e) {
+      print("Error deleting post: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -235,6 +259,12 @@ class PostsList extends StatelessWidget {
                             postId: doc.id,
                             teacherId: teacherId,
                             classId: classId),
+                        // Only show delete button if the current teacher is the one who posted
+                        if (doc['teacherId'] == teacherId)
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _deletePost(doc.id, context),
+                          ),
                       ],
                     ),
                   ),
@@ -267,6 +297,7 @@ class CommentSection extends StatefulWidget {
 class CommentSectionState extends State<CommentSection> {
   final TextEditingController _commentController = TextEditingController();
 
+  // Function to post a new comment
   Future<void> _postComment() async {
     if (_commentController.text.isEmpty) return;
 
@@ -288,6 +319,25 @@ class CommentSectionState extends State<CommentSection> {
     }
   }
 
+  // Function to delete a comment
+  Future<void> _deleteComment(String commentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .collection('comments')
+          .doc(commentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Comment deleted successfully!")),
+      );
+    } catch (e) {
+      print("Error deleting comment: $e");
+    }
+  }
+
+  // Function to fetch teacher's name for displaying in the comment
   Future<String> _fetchTeacherName(String teacherId, String classId) async {
     try {
       DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
@@ -324,12 +374,45 @@ class CommentSectionState extends State<CommentSection> {
 
             return Column(
               children: snapshot.data!.docs.map((doc) {
+                bool isOwner = doc['teacherId'] ==
+                    widget
+                        .teacherId; // Check if the current teacher is the comment owner
                 return FutureBuilder<String>(
                   future: _fetchTeacherName(doc['teacherId'], doc['classId']),
                   builder: (context, teacherSnapshot) {
-                    return ListTile(
-                      title: Text(teacherSnapshot.data ?? "Unknown Teacher"),
-                      subtitle: Text(doc['comment']),
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 8),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    teacherSnapshot.data ?? "Unknown Teacher",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(doc['comment']),
+                                ],
+                              ),
+                            ),
+                            if (isOwner) // Show the delete button only if the current teacher is the one who posted
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteComment(doc.id),
+                              ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );

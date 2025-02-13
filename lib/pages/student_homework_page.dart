@@ -16,12 +16,12 @@ class StudentHomeworkPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Student Homework",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(
@@ -56,11 +56,23 @@ class StudentHomeworkPage extends StatelessWidget {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               final homework = snapshot.data!.docs[index];
+              String dueDateFormatted = "No due date";
+
+              if (homework['dueDate'] != null) {
+                try {
+                  DateTime dueDate = DateTime.parse(homework['dueDate']);
+                  dueDateFormatted =
+                      "${dueDate.year}-${dueDate.month}-${dueDate.day}";
+                } catch (e) {
+                  dueDateFormatted = "Invalid date";
+                }
+              }
+
               return Card(
                 child: ListTile(
                   title: Text(homework['title']),
                   subtitle: Text(
-                    "${homework['description']}\nDue: ${homework['dueDate']}",
+                    "${homework['description']}\nDue: $dueDateFormatted",
                   ),
                 ),
               );

@@ -6,6 +6,7 @@ import 'package:collegeapp/pages/student_internal_exam_results.dart';
 import 'package:collegeapp/pages/student_announcement_page.dart';
 import 'package:collegeapp/pages/student_assignment_page.dart';
 import 'package:collegeapp/pages/student_homework_page.dart';
+import 'package:collegeapp/pages/student_manage_tasks_page.dart';
 import 'package:collegeapp/pages/student_post_page.dart';
 import 'package:collegeapp/pages/student_profile_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
@@ -238,6 +239,24 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
               // Features Section
               ...[
+                _buildFeatureTile(
+                  title: "Manage Tasks",
+                  subtitle: "Set your goals and tasks",
+                  icon: Icons.list_alt,
+                  color: Colors.deepPurple.shade800,
+                  onTap: () {
+                    // Navigate to Assignments
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StudentManageTasksPage(
+                          classId: widget.classId,
+                          studentId: widget.studentId,
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 _buildFeatureTile(
                   title: "Bus Tracking",
                   subtitle: "Track your bus in real time",

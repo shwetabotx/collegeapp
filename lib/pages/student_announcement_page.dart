@@ -1,20 +1,42 @@
+import 'package:collegeapp/pages/student_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
 
 class StudentAnnouncementsPage extends StatelessWidget {
   final String classId; // Pass the student's class ID
+  final String studentId;
   final Logger _logger = Logger(); // Initialize the logger
 
   StudentAnnouncementsPage(
-      {required this.classId, super.key, required String studentId});
+      {required this.classId, super.key, required this.studentId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Announcements 📢"),
-        backgroundColor: Colors.blue,
+        title: const Text(
+          "Announcements 📢",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.deepPurple,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StudentHomePage(
+                  classId: classId,
+                  studentId: studentId,
+                  driverId: '',
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -84,7 +106,7 @@ class StudentAnnouncementsPage extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(
                   Icons.announcement,
-                  color: Colors.blue,
+                  color: Colors.deepPurple,
                   size: 40,
                 ),
                 title: Text(

@@ -105,6 +105,7 @@ class TeacherPostPageState extends State<TeacherPostPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Teacher Posts"),
+        backgroundColor: Colors.green,
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(

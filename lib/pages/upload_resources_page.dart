@@ -154,6 +154,7 @@ class UploadResourcesPageState extends State<UploadResourcesPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Upload Resources"),
+        backgroundColor: Colors.green,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pushReplacement(

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/teacher_assignment_page.dart';
 import 'package:collegeapp/pages/teacher_homework_page.dart';
+import 'package:collegeapp/pages/teacher_manage_tasks_page.dart';
 import 'package:collegeapp/pages/teacher_post_page.dart';
 import 'package:collegeapp/pages/teacher_profile_page.dart';
 import 'package:collegeapp/pages/teacher_test_marks_page.dart';
@@ -215,8 +216,6 @@ class TeacherHomePage extends StatelessWidget {
               child: Row(
                 children: [
                   _buildDashboardCard(
-                      "Total Classes", "5", Icons.class_, context),
-                  _buildDashboardCard(
                       "Total Students", "120", Icons.group, context),
                   _buildDashboardCard(
                       "Pending Tasks", "3", Icons.pending_actions, context),
@@ -293,11 +292,11 @@ class TeacherHomePage extends StatelessWidget {
         color: Colors.green.shade100,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 32, color: Colors.green),
+              Icon(icon, size: 50, color: Colors.green),
               const SizedBox(height: 8),
               Text(
                 value,
@@ -321,9 +320,15 @@ class TeacherHomePage extends StatelessWidget {
       String title, IconData icon, Color color, BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (title == "Manage Classes") {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Tapped on Manage Classes')));
+        if (title == "Manage Tasks") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TeacherManageTasksPage(
+                      teacherId: teacherId,
+                      classId: classId,
+                    )),
+          );
         } else if (title == "Mark Attendance") {
           Navigator.pushReplacement(
             context,
@@ -370,9 +375,6 @@ class TeacherHomePage extends StatelessWidget {
                 builder: (context) => TeacherHomeworkPage(
                       teacherId: teacherId,
                       classId: classId,
-                      currentClassId: '',
-                      major: '',
-                      year: '',
                     )),
           );
         } else if (title == "Internal Marks") {

@@ -111,6 +111,7 @@ class TeacherTestMarksPageState extends State<TeacherTestMarksPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Upload Test Marks"),
+        backgroundColor: Colors.green,
         centerTitle: true,
         leading: IconButton(
           onPressed: () {

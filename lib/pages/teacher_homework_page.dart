@@ -9,9 +9,6 @@ class TeacherHomeworkPage extends StatefulWidget {
   const TeacherHomeworkPage({
     super.key,
     required this.teacherId,
-    required String currentClassId,
-    required String major,
-    required String year,
     required this.classId,
   });
 
@@ -43,64 +40,92 @@ class TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
   void _showAddHomeworkDialog() {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
-    final TextEditingController dueDateController = TextEditingController();
+    DateTime? selectedDueDate;
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Add Homework"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: "Title"),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text("Add Homework"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: "Title"),
+                  ),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(labelText: "Description"),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          selectedDueDate == null
+                              ? "Select Due Date"
+                              : "Due Date: ${selectedDueDate!.toLocal()}"
+                                  .split(' ')[0],
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () async {
+                          DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2100),
+                          );
+                          if (pickedDate != null) {
+                            setDialogState(() {
+                              selectedDueDate = pickedDate;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: "Description"),
-                maxLines: 3,
-              ),
-              TextField(
-                controller: dueDateController,
-                decoration:
-                    const InputDecoration(labelText: "Due Date (YYYY-MM-DD)"),
-                keyboardType: TextInputType.datetime,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (titleController.text.isNotEmpty &&
-                    descriptionController.text.isNotEmpty &&
-                    dueDateController.text.isNotEmpty &&
-                    selectedClassId != null) {
-                  await FirebaseFirestore.instance
-                      .collection('classes')
-                      .doc(selectedClassId)
-                      .collection('homework')
-                      .add({
-                    'title': titleController.text,
-                    'description': descriptionController.text,
-                    'dueDate': dueDateController.text,
-                    'teacherId': widget.teacherId,
-                    'timestamp': Timestamp.now(),
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Homework added!")),
-                  );
-                }
-              },
-              child: const Text("Add"),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (titleController.text.isNotEmpty &&
+                        descriptionController.text.isNotEmpty &&
+                        selectedDueDate != null &&
+                        selectedClassId != null) {
+                      await FirebaseFirestore.instance
+                          .collection('classes')
+                          .doc(selectedClassId)
+                          .collection('homework')
+                          .add({
+                        'title': titleController.text,
+                        'description': descriptionController.text,
+                        'dueDate': selectedDueDate!.toIso8601String(),
+                        'teacherId': widget.teacherId,
+                        'timestamp': Timestamp.now(),
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Homework added!")),
+                      );
+                    }
+                  },
+                  child: const Text("Add"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -135,7 +160,7 @@ class TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
               child: ListTile(
                 title: Text(homework['title']),
                 subtitle: Text(
-                  "${homework['description']}\nDue: ${homework['dueDate']}",
+                  "${homework['description']}\nDue: ${homework['dueDate'].toString().split('T')[0]}",
                 ),
               ),
             );
@@ -150,7 +175,7 @@ class TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Teacher Homework"),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.green,
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(

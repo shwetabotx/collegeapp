@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:collegeapp/pages/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -131,6 +133,19 @@ class TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
     );
   }
 
+  Future<void> _deleteHomework(String homeworkId) async {
+    await FirebaseFirestore.instance
+        .collection('classes')
+        .doc(selectedClassId)
+        .collection('homework')
+        .doc(homeworkId)
+        .delete();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Homework deleted!")),
+    );
+  }
+
   Widget _buildHomeworkList() {
     if (selectedClassId == null) {
       return const Center(child: Text("No class selected."));
@@ -161,6 +176,10 @@ class TeacherHomeworkPageState extends State<TeacherHomeworkPage> {
                 title: Text(homework['title']),
                 subtitle: Text(
                   "${homework['description']}\nDue: ${homework['dueDate'].toString().split('T')[0]}",
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deleteHomework(homework.id),
                 ),
               ),
             );

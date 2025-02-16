@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:email_validator/email_validator.dart';
 
 class AddDeleteTeachersPage extends StatefulWidget {
   const AddDeleteTeachersPage({super.key});
@@ -13,92 +14,129 @@ class _AddDeleteTeachersPageState extends State<AddDeleteTeachersPage> {
   final teacherNameController = TextEditingController();
   final teacherUsernameController = TextEditingController();
   final teacherPasswordController = TextEditingController();
-  final teacherSubjectController = TextEditingController();
   final teacherClassIdController = TextEditingController();
   final teacherDepartmentController = TextEditingController();
+  final teacherIdController = TextEditingController();
+  final teacherEmailController = TextEditingController();
+  final teacherPhoneController = TextEditingController();
 
-  // Controller for deleting teacher by username
+  // Controllers for deleting teachers
   final deleteTeacherUsernameController = TextEditingController();
+  final deleteTeacherClassIdController = TextEditingController();
 
   // Add Teacher to Firestore
   void addTeacherToDatabase() async {
-    if (teacherNameController.text.isEmpty ||
-        teacherUsernameController.text.isEmpty ||
-        teacherPasswordController.text.isEmpty ||
-        teacherSubjectController.text.isEmpty ||
-        teacherClassIdController.text.isEmpty ||
-        teacherDepartmentController.text.isEmpty) {
-      showErrorMessage('All fields are required to add a teacher');
+    String name = teacherNameController.text.trim();
+    String username = teacherUsernameController.text.trim();
+    String password = teacherPasswordController.text.trim();
+    String classId = teacherClassIdController.text.trim().toUpperCase();
+    String department = teacherDepartmentController.text.trim();
+    String teacherId = teacherIdController.text.trim();
+    String email = teacherEmailController.text.trim();
+    String phone = teacherPhoneController.text.trim();
+
+    // Validations
+    if (name.isEmpty ||
+        username.isEmpty ||
+        password.isEmpty ||
+        classId.isEmpty ||
+        department.isEmpty ||
+        teacherId.isEmpty ||
+        email.isEmpty ||
+        phone.isEmpty) {
+      showErrorMessage('All fields are required');
+      return;
+    }
+
+    if (!EmailValidator.validate(email)) {
+      showErrorMessage('Invalid email format');
+      return;
+    }
+
+    if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
+      showErrorMessage('Phone number must be exactly 10 digits');
       return;
     }
 
     try {
-      String classId = teacherClassIdController.text.trim();
-
-      // Add teacher to the correct class subcollection
-      await FirebaseFirestore.instance
+      DocumentReference teacherRef = FirebaseFirestore.instance
           .collection('classes')
           .doc(classId)
           .collection('teachers')
-          .add({
-        'name': teacherNameController.text.trim(),
-        'username': teacherUsernameController.text.trim(),
-        'password': teacherPasswordController.text.trim(),
-        'subject': teacherSubjectController.text.trim(),
+          .doc(username); // Use username as document ID
+
+      DocumentSnapshot teacherSnapshot = await teacherRef.get();
+
+      if (teacherSnapshot.exists) {
+        showErrorMessage('A teacher with this username already exists.');
+        return;
+      }
+
+      // Add teacher with username as document ID
+      await teacherRef.set({
+        'name': name,
+        'username': username,
+        'password': password,
         'classId': classId,
-        'department': teacherDepartmentController.text.trim(),
+        'department': department,
+        'teacherId': teacherId,
+        'email': email,
+        'phone': phone,
         'role': 'Teacher',
       });
 
       showSuccessMessage('Teacher added successfully');
-      teacherNameController.clear();
-      teacherUsernameController.clear();
-      teacherPasswordController.clear();
-      teacherSubjectController.clear();
-      teacherClassIdController.clear();
-      teacherDepartmentController.clear();
+      _clearFields();
     } catch (e) {
       showErrorMessage('Failed to add teacher: $e');
     }
   }
 
-  // Delete Teacher from Firestore by username
+  // Delete Teacher from Firestore
   void deleteTeacherFromDatabase() async {
-    if (deleteTeacherUsernameController.text.isEmpty ||
-        teacherClassIdController.text.isEmpty) {
+    String username = deleteTeacherUsernameController.text.trim();
+    String classId = deleteTeacherClassIdController.text.trim().toUpperCase();
+
+    if (username.isEmpty || classId.isEmpty) {
       showErrorMessage(
           'Username and Class ID are required to delete a teacher');
       return;
     }
 
     try {
-      String classId = teacherClassIdController.text.trim();
-
-      // Query the teacher in the correct class subcollection
-      QuerySnapshot teacherDocs = await FirebaseFirestore.instance
+      DocumentReference teacherRef = FirebaseFirestore.instance
           .collection('classes')
           .doc(classId)
           .collection('teachers')
-          .where('username',
-              isEqualTo: deleteTeacherUsernameController.text.trim())
-          .get();
+          .doc(username);
 
-      if (teacherDocs.docs.isEmpty) {
-        showErrorMessage(
-            'No teacher found with the given username in this class');
+      DocumentSnapshot teacherSnapshot = await teacherRef.get();
+
+      if (!teacherSnapshot.exists) {
+        showErrorMessage('No teacher found with this username in this class');
         return;
       }
 
-      for (var teacherDoc in teacherDocs.docs) {
-        await teacherDoc.reference.delete();
-      }
+      await teacherRef.delete();
 
       showSuccessMessage('Teacher deleted successfully');
       deleteTeacherUsernameController.clear();
-      teacherClassIdController.clear();
+      deleteTeacherClassIdController.clear();
     } catch (e) {
       showErrorMessage('Failed to delete teacher: $e');
     }
+  }
+
+  // Clear input fields
+  void _clearFields() {
+    teacherNameController.clear();
+    teacherUsernameController.clear();
+    teacherPasswordController.clear();
+    teacherClassIdController.clear();
+    teacherDepartmentController.clear();
+    teacherIdController.clear();
+    teacherEmailController.clear();
+    teacherPhoneController.clear();
   }
 
   // Show success message
@@ -160,60 +198,20 @@ class _AddDeleteTeachersPageState extends State<AddDeleteTeachersPage> {
                   children: [
                     const Text(
                       'Add Teacher',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: teacherNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Teacher Name',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: teacherUsernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: teacherPasswordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: teacherSubjectController,
-                      decoration: const InputDecoration(
-                        labelText: 'Subject',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: teacherClassIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Class ID',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: teacherDepartmentController,
-                      decoration: const InputDecoration(
-                        labelText: 'Department',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    _buildTextField(teacherNameController, 'Teacher Name'),
+                    _buildTextField(teacherUsernameController, 'Username'),
+                    _buildTextField(teacherPasswordController, 'Password',
+                        obscureText: true),
+                    _buildTextField(teacherClassIdController, 'Class ID '),
+                    _buildTextField(teacherDepartmentController, 'Department'),
+                    _buildTextField(teacherIdController, 'Teacher ID'),
+                    _buildTextField(teacherEmailController, 'Email'),
+                    _buildTextField(
+                        teacherPhoneController, 'Phone (10 digits)'),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: addTeacherToDatabase,
@@ -234,41 +232,42 @@ class _AddDeleteTeachersPageState extends State<AddDeleteTeachersPage> {
                   children: [
                     const Text(
                       'Delete Teacher',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: deleteTeacherUsernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username to Delete',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: teacherClassIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Class ID',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    _buildTextField(
+                        deleteTeacherUsernameController, 'Username to Delete'),
+                    _buildTextField(deleteTeacherClassIdController, 'Class ID'),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: deleteTeacherFromDatabase,
                       icon: const Icon(Icons.delete),
                       label: const Text('Delete Teacher'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     ),
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Widget for text fields
+  Widget _buildTextField(TextEditingController controller, String label,
+      {bool obscureText = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
         ),
       ),
     );

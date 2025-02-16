@@ -61,7 +61,7 @@ class TeacherAnnouncementPageState extends State<TeacherAnnouncementPage> {
             ),
             const SizedBox(height: 16),
             const Text(
-              "Your Announcements 📝",
+              "Your Announcements",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -81,17 +81,17 @@ class TeacherAnnouncementPageState extends State<TeacherAnnouncementPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Add Announcement 📢"),
+          title: const Text("Add Announcement"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(labelText: "Title 🏷️"),
+                decoration: const InputDecoration(labelText: "Title"),
               ),
               TextField(
                 controller: contentController,
-                decoration: const InputDecoration(labelText: "Content 📝"),
+                decoration: const InputDecoration(labelText: "Content"),
                 maxLines: 3,
               ),
             ],
@@ -99,7 +99,7 @@ class TeacherAnnouncementPageState extends State<TeacherAnnouncementPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel 🚫"),
+              child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -123,7 +123,7 @@ class TeacherAnnouncementPageState extends State<TeacherAnnouncementPage> {
                   }
                 }
               },
-              child: const Text("Add ➕"),
+              child: const Text("Add"),
             ),
           ],
         );

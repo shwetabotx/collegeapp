@@ -146,6 +146,7 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
             final assignment = snapshot.data!.docs[index];
+            final assignmentId = assignment.id;
 
             // Convert Timestamp to readable Date
             Timestamp dueDateTimestamp = assignment['dueDate'];
@@ -158,12 +159,40 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
                 subtitle: Text(
                   "${assignment['description']}\nDue: $formattedDueDate",
                 ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    _deleteAssignment(assignmentId);
+                  },
+                ),
               ),
             );
           },
         );
       },
     );
+  }
+
+  // Function to delete an assignment
+  Future<void> _deleteAssignment(String assignmentId) async {
+    if (selectedClassId == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(selectedClassId)
+          .collection('assignments')
+          .doc(assignmentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Assignment deleted successfully.")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error deleting assignment: $e")),
+      );
+    }
   }
 
   @override
@@ -221,7 +250,7 @@ class TeacherAssignmentPageState extends State<TeacherAssignmentPage> {
             ),
             const SizedBox(height: 24),
             const Text(
-              "Assignments for Selected Class",
+              "Assignments",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),

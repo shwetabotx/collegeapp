@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:email_validator/email_validator.dart';
 
 class AddDeleteStudentsPage extends StatefulWidget {
   const AddDeleteStudentsPage({super.key});
@@ -17,27 +18,49 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
   final studentEmailController = TextEditingController();
   final studentPhoneNumberController = TextEditingController();
   final studentUsernameController = TextEditingController();
+  final studentDepartmentController = TextEditingController();
+  final studentDriverIdController = TextEditingController();
 
   // Controller for deleting a student by their username
   final deleteStudentUsernameController = TextEditingController();
 
   // Add Student to Firestore
   void addStudentToDatabase() async {
+    String classId = studentClassIdController.text.trim().toUpperCase();
+    String studentId = studentUsernameController.text.trim();
+    String phoneNumber = studentPhoneNumberController.text.trim();
+    String email = studentEmailController.text.trim();
+
+    // Validate required fields
     if (studentNameController.text.isEmpty ||
         studentPasswordController.text.isEmpty ||
         studentRollNumberController.text.isEmpty ||
-        studentClassIdController.text.isEmpty ||
-        studentEmailController.text.isEmpty ||
-        studentPhoneNumberController.text.isEmpty ||
-        studentUsernameController.text.isEmpty) {
+        classId.isEmpty ||
+        email.isEmpty ||
+        phoneNumber.isEmpty ||
+        studentId.isEmpty ||
+        studentDepartmentController.text.isEmpty ||
+        studentDriverIdController.text.isEmpty) {
       showErrorMessage('All fields are required to add a student');
+      return;
+    }
+
+    // Validate phone number (10 digits only)
+    if (!RegExp(r'^\d{10}$').hasMatch(phoneNumber)) {
+      showErrorMessage('Phone number must be exactly 10 digits');
+      return;
+    }
+
+    // Validate email format
+    if (!EmailValidator.validate(email)) {
+      showErrorMessage('Invalid email format');
       return;
     }
 
     try {
       DocumentSnapshot classDoc = await FirebaseFirestore.instance
           .collection('classes')
-          .doc(studentClassIdController.text.trim())
+          .doc(classId)
           .get();
 
       if (!classDoc.exists) {
@@ -47,30 +70,40 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
 
       await FirebaseFirestore.instance
           .collection('classes')
-          .doc(studentClassIdController.text.trim())
+          .doc(classId)
           .collection('students')
-          .add({
+          .doc(studentId)
+          .set({
         'name': studentNameController.text.trim(),
-        'username': studentUsernameController.text.trim(),
+        'username': studentId,
         'password': studentPasswordController.text.trim(),
         'rollNumber': studentRollNumberController.text.trim(),
-        'classId': studentClassIdController.text.trim(),
-        'email': studentEmailController.text.trim(),
-        'phoneNumber': studentPhoneNumberController.text.trim(),
+        'classId': classId,
+        'email': email,
+        'phoneNumber': phoneNumber,
+        'department': studentDepartmentController.text.trim(),
+        'driverId': studentDriverIdController.text.trim(),
         'role': 'Student',
       });
 
       showSuccessMessage('Student added successfully');
-      studentNameController.clear();
-      studentPasswordController.clear();
-      studentRollNumberController.clear();
-      studentClassIdController.clear();
-      studentEmailController.clear();
-      studentPhoneNumberController.clear();
-      studentUsernameController.clear();
+      clearFields();
     } catch (e) {
       showErrorMessage('Failed to add student: $e');
     }
+  }
+
+  // Clear all input fields
+  void clearFields() {
+    studentNameController.clear();
+    studentPasswordController.clear();
+    studentRollNumberController.clear();
+    studentClassIdController.clear();
+    studentEmailController.clear();
+    studentPhoneNumberController.clear();
+    studentUsernameController.clear();
+    studentDepartmentController.clear();
+    studentDriverIdController.clear();
   }
 
   // Delete Student from Firestore by Username
@@ -116,36 +149,20 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
   }
 
   void showSuccessMessage(String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.green,
-          title: Center(
-            child: Text(
-              message,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        );
-      },
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 
   void showErrorMessage(String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.red,
-          title: Center(
-            child: Text(
-              message,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        );
-      },
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 
@@ -172,68 +189,21 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
                   children: [
                     const Text(
                       'Add Student',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: studentNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Student Name',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: studentUsernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: studentPasswordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: studentRollNumberController,
-                      decoration: const InputDecoration(
-                        labelText: 'Roll Number',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: studentClassIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Class ID',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: studentEmailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: studentPhoneNumberController,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    textField(studentNameController, 'Student Name'),
+                    textField(studentUsernameController, 'Username'),
+                    textField(studentPasswordController, 'Password',
+                        isPassword: true),
+                    textField(studentRollNumberController, 'Roll Number'),
+                    textField(studentClassIdController, 'Class ID'),
+                    textField(studentEmailController, 'Email'),
+                    textField(studentPhoneNumberController,
+                        'Phone Number (10 digits)'),
+                    textField(studentDepartmentController, 'Department'),
+                    textField(studentDriverIdController, 'Driver ID'),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: addStudentToDatabase,
@@ -244,9 +214,11 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
                 ),
               ),
             ),
+
             // Delete Student Section
             Card(
               elevation: 4,
+              margin: const EdgeInsets.only(bottom: 16.0),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -254,33 +226,40 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
                   children: [
                     const Text(
                       'Delete Student',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: deleteStudentUsernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username to Delete',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    textField(deleteStudentUsernameController,
+                        'Enter Username to Delete'),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: deleteStudentFromDatabase,
                       icon: const Icon(Icons.delete),
                       label: const Text('Delete Student'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     ),
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget textField(TextEditingController controller, String label,
+      {bool isPassword = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
         ),
       ),
     );

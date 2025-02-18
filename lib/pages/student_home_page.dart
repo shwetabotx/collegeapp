@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'login_page.dart';
+//import 'razorpay_payment.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/attendance_tracking_page.dart';
 import 'package:collegeapp/pages/driver_location_map_page.dart';
@@ -12,9 +15,6 @@ import 'package:collegeapp/pages/student_profile_page.dart';
 import 'package:collegeapp/pages/student_timetable_page.dart';
 import 'package:collegeapp/pages/sudent_links_page.dart';
 import 'package:collegeapp/pages/view_resources_page.dart';
-import 'package:flutter/material.dart';
-import 'login_page.dart';
-import 'razorpay_payment.dart';
 
 class StudentHomePage extends StatefulWidget {
   final String classId;
@@ -33,15 +33,16 @@ class StudentHomePage extends StatefulWidget {
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
-  String studentName = "Student"; // Default name in case fetching fails
+  String studentName = "Student";
+  String profileImageUrl = ""; // Default empty, fallback to asset image
 
   @override
   void initState() {
     super.initState();
-    _fetchStudentName();
+    _fetchStudentData();
   }
 
-  Future<void> _fetchStudentName() async {
+  Future<void> _fetchStudentData() async {
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('classes')
@@ -53,10 +54,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
       if (snapshot.exists) {
         setState(() {
           studentName = snapshot.data()?['name'] ?? "Student";
+          profileImageUrl = snapshot.data()?['profileImageUrl'] ?? "";
         });
       }
     } catch (e) {
-      debugPrint("Error fetching student name: $e");
+      debugPrint("Error fetching student data: $e");
     }
   }
 
@@ -91,10 +93,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundImage: AssetImage('lib/images/me2.png'),
-                  ),
                   const SizedBox(height: 12),
                   Text(
                     studentName,
@@ -107,11 +105,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 ],
               ),
             ),
+            // Other drawer items remain unchanged
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text("Profile"),
               onTap: () {
-                // Navigate to Profile Page
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -124,13 +122,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text("Settings"),
-              onTap: () {
-                // Navigate to Settings Page
-              },
-            ),
+
             ListTile(
               leading: const Icon(Icons.info),
               title: const Text("About Us"),
@@ -156,6 +148,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Settings"),
+              onTap: () {
+                // Navigate to Settings Page
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.logout),
               title: const Text("Logout"),
               onTap: () {
@@ -169,13 +168,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Close the dialog
+                            Navigator.pop(context);
                           },
                           child: const Text("No"),
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Close the dialog
+                            Navigator.pop(context);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
@@ -199,7 +198,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Welcome Banner
+              // Welcome Banner with Profile Picture
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -212,10 +211,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 ),
                 child: Column(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 40,
-                      backgroundImage: AssetImage(
-                          'lib/images/me2.png'), // Add profile picture
+                      backgroundImage: profileImageUrl.isNotEmpty
+                          ? NetworkImage(profileImageUrl)
+                          : const AssetImage('lib/images/me2.png')
+                              as ImageProvider,
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -237,220 +238,213 @@ class _StudentHomePageState extends State<StudentHomePage> {
               ),
               const SizedBox(height: 24),
 
-              // Features Section
-              ...[
-                _buildFeatureTile(
-                  title: "Manage Tasks",
-                  subtitle: "Set your goals and tasks",
-                  icon: Icons.list_alt,
-                  color: Colors.deepPurple.shade800,
-                  onTap: () {
-                    // Navigate to Assignments
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StudentManageTasksPage(
-                          classId: widget.classId,
-                          studentId: widget.studentId,
-                        ),
+              // Existing Features List (Kept intact)
+              _buildFeatureTile(
+                title: "Manage Tasks",
+                subtitle: "Set your goals and tasks",
+                icon: Icons.list_alt,
+                color: Colors.deepPurple.shade800,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentManageTasksPage(
+                        classId: widget.classId,
+                        studentId: widget.studentId,
                       ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Bus Tracking",
-                  subtitle: "Track your bus in real time",
-                  icon: Icons.directions_bus,
-                  color: Colors.deepPurple.shade300,
-                  onTap: () {
-                    // Navigate to map page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DriverLocationMapPage(
-                          driverId: widget.driverId,
-                          studentId: widget.studentId,
-                          classId: widget.classId,
-                        ),
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Bus Tracking",
+                subtitle: "Track your bus in real time",
+                icon: Icons.directions_bus,
+                color: Colors.deepPurple.shade300,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DriverLocationMapPage(
+                        driverId: widget.driverId,
+                        studentId: widget.studentId,
+                        classId: widget.classId,
                       ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Attendance",
-                  subtitle: "Check your attendance records",
-                  icon: Icons.access_alarm,
-                  color: Colors.purple.shade400,
-                  onTap: () {
-                    // Navigate to Attendance
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AttendanceTrackingPage(
-                            classId: widget.classId,
-                            studentId: widget.studentId),
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Attendance",
+                subtitle: "Check your attendance records",
+                icon: Icons.access_alarm,
+                color: Colors.purple.shade400,
+                onTap: () {
+                  // Navigate to Attendance
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AttendanceTrackingPage(
+                          classId: widget.classId, studentId: widget.studentId),
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Time-Table",
+                subtitle: "Your Weekly Time-Table",
+                icon: Icons.calendar_month,
+                color: Colors.deepPurple.shade400,
+                onTap: () {
+                  // Navigate to Time-Table
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentTimeTablePage(
+                        classId: widget.classId,
+                        studentId: widget.studentId,
                       ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Time-Table",
-                  subtitle: "Your Weekly Time-Table",
-                  icon: Icons.calendar_month,
-                  color: Colors.deepPurple.shade400,
-                  onTap: () {
-                    // Navigate to Time-Table
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StudentTimeTablePage(
-                          classId: widget.classId,
-                          studentId: widget.studentId,
-                        ),
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Discussion Corner",
+                subtitle: "Discuss",
+                icon: Icons.chat,
+                color: Colors.deepPurple.shade400,
+                onTap: () {
+                  //Navigate to Time-Table
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentPostPage(
+                        classId: widget.classId,
+                        studentId: widget.studentId,
                       ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Discussion Corner",
-                  subtitle: "Discuss",
-                  icon: Icons.chat,
-                  color: Colors.deepPurple.shade400,
-                  onTap: () {
-                    //Navigate to Time-Table
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StudentPostPage(
-                          classId: widget.classId,
-                          studentId: widget.studentId,
-                        ),
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Announcements",
+                subtitle: "View important updates",
+                icon: Icons.announcement,
+                color: Colors.purpleAccent,
+                onTap: () {
+                  // Navigate to Announcements
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentAnnouncementsPage(
+                        classId: widget.classId,
+                        studentId: widget.studentId,
                       ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Announcements",
-                  subtitle: "View important updates",
-                  icon: Icons.announcement,
-                  color: Colors.purpleAccent,
-                  onTap: () {
-                    // Navigate to Announcements
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StudentAnnouncementsPage(
-                          classId: widget.classId,
-                          studentId: widget.studentId,
-                        ),
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Assignments",
+                subtitle: "Track your assignments",
+                icon: Icons.menu_book,
+                color: Colors.deepPurple.shade800,
+                onTap: () {
+                  // Navigate to Assignments
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentAssignmentPage(
+                        classId: widget.classId,
+                        studentId: widget.studentId,
                       ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Assignments",
-                  subtitle: "Track your assignments",
-                  icon: Icons.menu_book,
-                  color: Colors.deepPurple.shade800,
-                  onTap: () {
-                    // Navigate to Assignments
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StudentAssignmentPage(
-                          classId: widget.classId,
-                          studentId: widget.studentId,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Fees",
-                  subtitle: "Pay your college fees",
-                  icon: Icons.currency_rupee,
-                  color: Colors.deepPurple.shade400,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RazorpayPage(
-                            classId: widget.classId,
-                            studentId: widget.studentId),
-                      ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Homework",
-                  subtitle: "View your homework",
-                  icon: Icons.assignment,
-                  color: Colors.purpleAccent.shade700,
-                  onTap: () {
-                    // Navigate to Homework
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StudentHomeworkPage(
-                            classId: widget.classId,
-                            studentId: widget.studentId),
-                      ),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "View Resources",
-                  subtitle: "Get your resources on a click!",
-                  icon: Icons.note,
-                  color: Colors.deepPurple.shade600,
-                  onTap: () {
-                    // Navigate to View Resources
-                    // Navigate to Important Links
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ViewResourcesPage(
-                                classId: widget.classId,
-                                studentId: widget.studentId,
-                              )),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Important Links",
-                  subtitle: "Access useful resources' links",
-                  icon: Icons.link,
-                  color: Colors.purple.shade300,
-                  onTap: () {
-                    // Navigate to Important Links
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => StudentLinksPage(
-                                classId: widget.classId,
-                                studentId: widget.studentId,
-                              )),
-                    );
-                  },
-                ),
-                _buildFeatureTile(
-                  title: "Internal Exam Results",
-                  subtitle: "View your academic progress",
-                  icon: Icons.grade,
-                  color: Colors.purpleAccent.shade700,
-                  onTap: () {
-                    // Navigate to Test Results
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => StudentInternalExamResultsPage(
-                                studentId: widget.studentId,
-                                classId: widget.classId,
-                              )),
-                    );
-                  },
-                ),
-              ],
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Fees",
+                subtitle: "Pay your college fees",
+                icon: Icons.currency_rupee,
+                color: Colors.deepPurple.shade400,
+                onTap: () {
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => RazorpayPage(
+                  //           classId: widget.classId, studentId: widget.studentId),
+                  //     ),
+                  //   );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Homework",
+                subtitle: "View your homework",
+                icon: Icons.assignment,
+                color: Colors.purpleAccent.shade700,
+                onTap: () {
+                  // Navigate to Homework
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentHomeworkPage(
+                          classId: widget.classId, studentId: widget.studentId),
+                    ),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "View Resources",
+                subtitle: "Get your resources on a click!",
+                icon: Icons.note,
+                color: Colors.deepPurple.shade600,
+                onTap: () {
+                  // Navigate to View Resources
+                  // Navigate to Important Links
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ViewResourcesPage(
+                              classId: widget.classId,
+                              studentId: widget.studentId,
+                            )),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Important Links",
+                subtitle: "Access useful resources' links",
+                icon: Icons.link,
+                color: Colors.purple.shade300,
+                onTap: () {
+                  // Navigate to Important Links
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => StudentLinksPage(
+                              classId: widget.classId,
+                              studentId: widget.studentId,
+                            )),
+                  );
+                },
+              ),
+              _buildFeatureTile(
+                title: "Internal Exam Results",
+                subtitle: "View your academic progress",
+                icon: Icons.grade,
+                color: Colors.purpleAccent.shade700,
+                onTap: () {
+                  // Navigate to Test Results
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => StudentInternalExamResultsPage(
+                              studentId: widget.studentId,
+                              classId: widget.classId,
+                            )),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -473,24 +467,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
           contentPadding: const EdgeInsets.all(16),
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 32, color: color),
-          ),
+          leading: Icon(icon, size: 32, color: color),
           title: Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          subtitle: Text(
-            subtitle,
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
+          subtitle:
+              Text(subtitle, style: TextStyle(color: Colors.grey.shade600)),
           trailing: const Icon(Icons.arrow_forward_ios, size: 18),
         ),
       ),

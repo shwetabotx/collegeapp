@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/admin/add_delete.dart';
-import 'package:collegeapp/pages/admin/view_roles_page.dart';
+import 'package:collegeapp/pages/admin/view_users_page.dart';
 import 'package:collegeapp/pages/login_page.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
@@ -296,12 +296,12 @@ class AdminHomePage extends StatelessWidget {
                   ),
                   _buildFeatureCard(
                     icon: Icons.manage_accounts,
-                    title: 'View Roles',
+                    title: 'View Users',
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ViewRolesPage(),
+                          builder: (context) => const ViewUsersPage(),
                         ),
                       );
                     },

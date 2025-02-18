@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class TeacherProfilePage extends StatelessWidget {
+class TeacherProfilePage extends StatefulWidget {
   final String classId;
   final String teacherId;
 
@@ -10,6 +14,97 @@ class TeacherProfilePage extends StatelessWidget {
     required this.classId,
     required this.teacherId,
   });
+
+  @override
+  TeacherProfilePageState createState() => TeacherProfilePageState();
+}
+
+class TeacherProfilePageState extends State<TeacherProfilePage> {
+  String? _profileImageUrl;
+  bool _isUploading = false;
+
+  /// Fetch teacher profile data, including the profile picture URL
+  Future<void> _fetchTeacherData() async {
+    DocumentSnapshot teacherSnapshot = await FirebaseFirestore.instance
+        .collection('classes')
+        .doc(widget.classId)
+        .collection('teachers')
+        .doc(widget.teacherId)
+        .get();
+
+    if (teacherSnapshot.exists) {
+      setState(() {
+        _profileImageUrl = teacherSnapshot.data() != null &&
+                (teacherSnapshot.data() as Map).containsKey('profileImageUrl')
+            ? teacherSnapshot['profileImageUrl']
+            : null;
+      });
+    }
+  }
+
+  /// Upload the selected image to Cloudinary
+  Future<String?> _uploadImageToCloudinary(File imageFile) async {
+    const cloudName = "dnxfyvlei"; // Replace with your Cloudinary cloud name
+    const uploadPreset = 'collegeapp';
+
+    final url =
+        Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
+    final request = http.MultipartRequest("POST", url)
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      final decodedData = json.decode(responseData);
+      return decodedData['secure_url']; // Cloudinary returns a secure HTTPS URL
+    } else {
+      return null;
+    }
+  }
+
+  /// Pick an image from the gallery and upload it to Cloudinary
+  Future<void> _pickAndUploadImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile == null) return;
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    File imageFile = File(pickedFile.path);
+    String? imageUrl = await _uploadImageToCloudinary(imageFile);
+
+    if (imageUrl != null) {
+      await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(widget.classId)
+          .collection('teachers')
+          .doc(widget.teacherId)
+          .update({'profileImageUrl': imageUrl});
+
+      setState(() {
+        _profileImageUrl = imageUrl;
+        _isUploading = false;
+      });
+    } else {
+      setState(() {
+        _isUploading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to upload image. Try again.")),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTeacherData();
+  }
 
   /// Converts dynamic field to a string with proper type handling
   String convertToString(dynamic value) {
@@ -44,9 +139,9 @@ class TeacherProfilePage extends StatelessWidget {
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
             .collection('classes')
-            .doc(classId)
+            .doc(widget.classId)
             .collection('teachers')
-            .doc(teacherId)
+            .doc(widget.teacherId)
             .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -74,14 +169,21 @@ class TeacherProfilePage extends StatelessWidget {
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.green,
-                          child: const Icon(
-                            Icons.person,
-                            size: 40,
-                            color: Colors.white,
-                          ),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage: _profileImageUrl != null
+                                  ? NetworkImage(_profileImageUrl!)
+                                  : const AssetImage('lib/images/me2.png')
+                                      as ImageProvider,
+                            ),
+                            if (_isUploading)
+                              const CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                          ],
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -104,6 +206,11 @@ class TeacherProfilePage extends StatelessWidget {
                               ),
                             ],
                           ),
+                        ),
+                        IconButton(
+                          icon:
+                              const Icon(Icons.camera_alt, color: Colors.green),
+                          onPressed: _pickAndUploadImage,
                         ),
                       ],
                     ),
@@ -133,7 +240,7 @@ class TeacherProfilePage extends StatelessWidget {
                         ProfileDetailRow(
                           icon: Icons.class_,
                           label: "Class ID",
-                          value: classId,
+                          value: widget.classId,
                         ),
                         ProfileDetailRow(
                           icon: Icons.person,

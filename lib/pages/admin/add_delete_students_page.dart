@@ -16,7 +16,7 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
   final studentRollNumberController = TextEditingController();
   final studentClassIdController = TextEditingController();
   final studentEmailController = TextEditingController();
-  final studentPhoneNumberController = TextEditingController();
+  final studentPhoneController = TextEditingController();
   final studentUsernameController = TextEditingController();
   final studentDepartmentController = TextEditingController();
   final studentDriverIdController = TextEditingController();
@@ -28,7 +28,7 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
   void addStudentToDatabase() async {
     String classId = studentClassIdController.text.trim().toUpperCase();
     String studentId = studentUsernameController.text.trim();
-    String phoneNumber = studentPhoneNumberController.text.trim();
+    String phone = studentPhoneController.text.trim();
     String email = studentEmailController.text.trim();
 
     // Validate required fields
@@ -37,7 +37,7 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
         studentRollNumberController.text.isEmpty ||
         classId.isEmpty ||
         email.isEmpty ||
-        phoneNumber.isEmpty ||
+        phone.isEmpty ||
         studentId.isEmpty ||
         studentDepartmentController.text.isEmpty ||
         studentDriverIdController.text.isEmpty) {
@@ -46,7 +46,7 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
     }
 
     // Validate phone number (10 digits only)
-    if (!RegExp(r'^\d{10}$').hasMatch(phoneNumber)) {
+    if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
       showErrorMessage('Phone number must be exactly 10 digits');
       return;
     }
@@ -80,7 +80,7 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
         'rollNumber': studentRollNumberController.text.trim(),
         'classId': classId,
         'email': email,
-        'phoneNumber': phoneNumber,
+        'phone': phone,
         'department': studentDepartmentController.text.trim(),
         'driverId': studentDriverIdController.text.trim(),
         'role': 'Student',
@@ -100,7 +100,7 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
     studentRollNumberController.clear();
     studentClassIdController.clear();
     studentEmailController.clear();
-    studentPhoneNumberController.clear();
+    studentPhoneController.clear();
     studentUsernameController.clear();
     studentDepartmentController.clear();
     studentDriverIdController.clear();
@@ -200,8 +200,8 @@ class _AddDeleteStudentsPageState extends State<AddDeleteStudentsPage> {
                     textField(studentRollNumberController, 'Roll Number'),
                     textField(studentClassIdController, 'Class ID'),
                     textField(studentEmailController, 'Email'),
-                    textField(studentPhoneNumberController,
-                        'Phone Number (10 digits)'),
+                    textField(
+                        studentPhoneController, 'Phone Number (10 digits)'),
                     textField(studentDepartmentController, 'Department'),
                     textField(studentDriverIdController, 'Driver ID'),
                     const SizedBox(height: 20),

@@ -38,12 +38,18 @@ class TeacherHomePage extends StatelessWidget {
         return {
           'name': data?['name'] ?? 'Unknown Name',
           'department': data?['department'] ?? 'Unknown Department',
+          'profileImageUrl': data?['profileImageUrl'] ??
+              'lib/images/me2.png', // Fetch profile image URL
         };
       }
     } catch (e) {
       debugPrint('Error fetching teacher details: $e');
     }
-    return {'name': 'Unknown Name', 'department': 'Unknown Department'};
+    return {
+      'name': 'Unknown Name',
+      'department': 'Unknown Department',
+      'profileImageUrl': 'lib/images/me2.png', // Default image
+    };
   }
 
   @override
@@ -82,6 +88,7 @@ class TeacherHomePage extends StatelessWidget {
           final teacherDetails = snapshot.data ?? {};
           final teacherName = teacherDetails['name']!;
           final teacherDepartment = teacherDetails['department']!;
+          final profileImageUrl = teacherDetails['profileImageUrl']!;
 
           return Drawer(
             child: ListView(
@@ -92,9 +99,10 @@ class TeacherHomePage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage('lib/images/me2.png'),
+                        backgroundImage: NetworkImage(
+                            profileImageUrl), // Display the fetched profile image
                       ),
                       const SizedBox(height: 10),
                       Text(

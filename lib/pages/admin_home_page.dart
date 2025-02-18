@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/admin_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/login_page.dart';
@@ -226,13 +227,30 @@ class AdminHomePageState extends State<AdminHomePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text("Settings"),
+              leading: const Icon(Icons.info),
+              title: const Text("About Us"),
               onTap: () {},
             ),
             ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text("About Us"),
+              leading: const Icon(Icons.group),
+              title: const Text("About Devlopers"),
+              onTap: () {
+                // Navigate to About Us Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AboutDevelopersPage(
+                      classId: '',
+                      studentId: '',
+                      teacherId: '',
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Settings"),
               onTap: () {},
             ),
             ListTile(

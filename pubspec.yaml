@@ -67,6 +67,7 @@ dependencies:
   excel: ^4.0.6
   mailer: ^6.4.1
   email_validator: ^3.0.0
+  dio: ^5.8.0+1
 
   
   

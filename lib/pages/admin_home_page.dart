@@ -1,18 +1,52 @@
 // ignore_for_file: avoid_print
 
-import 'dart:io';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collegeapp/pages/admin_profile_page.dart';
+import 'package:flutter/material.dart';
+import 'package:collegeapp/pages/login_page.dart';
 import 'package:collegeapp/pages/admin/add_delete.dart';
 import 'package:collegeapp/pages/admin/view_users_page.dart';
-import 'package:collegeapp/pages/login_page.dart';
-import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:excel/excel.dart';
+import 'dart:io';
+import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 
-class AdminHomePage extends StatelessWidget {
-  const AdminHomePage({super.key});
+class AdminHomePage extends StatefulWidget {
+  final String adminId; // Admin ID passed from login
+
+  const AdminHomePage({super.key, required this.adminId});
+
+  @override
+  AdminHomePageState createState() => AdminHomePageState();
+}
+
+class AdminHomePageState extends State<AdminHomePage> {
+  String adminName = "Admin"; // Default name while fetching
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAdminName();
+  }
+
+  /// Fetch admin's name from Firestore
+  Future<void> fetchAdminName() async {
+    try {
+      DocumentSnapshot adminDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.adminId)
+          .get();
+
+      if (adminDoc.exists) {
+        setState(() {
+          adminName = adminDoc['name'] ?? "Admin";
+        });
+      }
+    } catch (e) {
+      print("Error fetching admin name: $e");
+    }
+  }
 
   /// Generates a random alphanumeric string of the given length
   String generateRandomString(int length) {
@@ -133,32 +167,6 @@ class AdminHomePage extends StatelessWidget {
     }
   }
 
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 50, color: Colors.deepPurple),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -191,13 +199,9 @@ class AdminHomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundImage: AssetImage('lib/images/me2.png'),
-                  ),
                   const SizedBox(height: 12),
                   Text(
-                    ("Admin"),
+                    adminName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -211,22 +215,25 @@ class AdminHomePage extends StatelessWidget {
               leading: const Icon(Icons.person),
               title: const Text("Profile"),
               onTap: () {
-                // Navigate to Profile Page
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AdminProfilePage(
+                      adminId: widget.adminId,
+                    ),
+                  ),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text("Settings"),
-              onTap: () {
-                // Navigate to Settings Page
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: const Icon(Icons.info),
               title: const Text("About Us"),
-              onTap: () {
-                // Navigate to About Us Page
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: const Icon(Icons.logout),
@@ -242,13 +249,13 @@ class AdminHomePage extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Close the dialog
+                            Navigator.pop(context);
                           },
                           child: const Text("No"),
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context); // Close the dialog
+                            Navigator.pop(context);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
@@ -271,9 +278,9 @@ class AdminHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Welcome, Admin!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              'Welcome, $adminName!',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -301,7 +308,9 @@ class AdminHomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ViewUsersPage(),
+                          builder: (context) => ViewUsersPage(
+                            adminId: widget.adminId,
+                          ),
                         ),
                       );
                     },
@@ -313,6 +322,55 @@ class AdminHomePage extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Processes the uploaded Excel file
+  Future<void> processExcelFile(File file) async {
+    try {
+      var bytes = await file.readAsBytes();
+      var excel = Excel.decodeBytes(bytes);
+
+      for (var table in excel.tables.keys) {
+        for (var row in excel.tables[table]!.rows) {
+          print(row.map((e) => e?.value).toList());
+        }
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Excel file processed successfully!")),
+      );
+    } catch (e) {
+      print("Error processing Excel file: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to process Excel file")),
+      );
+    }
+  }
+
+  Widget _buildFeatureCard({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 50, color: Colors.deepPurple),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),

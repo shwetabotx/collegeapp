@@ -56,13 +56,17 @@ class _LoginPageState extends State<LoginPage> {
           throw Exception(
               'Teachers must log in via the class-specific subcollection.');
         } else if (role == 'Admin') {
+          String adminId = userDoc.id; // Get the adminId
+
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const AdminHomePage()),
+            MaterialPageRoute(
+              builder: (context) =>
+                  AdminHomePage(adminId: adminId), // Pass adminId
+            ),
           );
-        } else {
-          throw Exception('Invalid role.');
         }
+
         return;
       }
 

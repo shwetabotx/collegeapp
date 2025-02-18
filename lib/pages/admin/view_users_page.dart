@@ -1,12 +1,13 @@
 // ignore_for_file: avoid_print
 
 import 'package:collegeapp/pages/admin_home_page.dart';
-import 'package:collegeapp/pages/admin/user_details_page.dart'; // Import the new page
+import 'package:collegeapp/pages/admin/user_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ViewUsersPage extends StatefulWidget {
-  const ViewUsersPage({super.key});
+  const ViewUsersPage({super.key, required this.adminId});
+  final String adminId;
 
   @override
   ViewUsersPageState createState() => ViewUsersPageState();
@@ -18,6 +19,23 @@ class ViewUsersPageState extends State<ViewUsersPage> {
   List<Map<String, dynamic>> students = [];
   bool showTeachers = true;
   bool isLoading = true;
+
+  List<String> classFilters = [
+    'All',
+    'FYBA',
+    'FYBCOM',
+    'FYBS',
+    'SYBA',
+    'SYBCOM',
+    'SYBS',
+    'TYBA',
+    'TYBCOM',
+    'TYBS',
+    'LYBA',
+    'LYBCOM',
+    'LYBS',
+  ];
+  String selectedClass = 'All'; // Default: Show all classes
 
   @override
   void initState() {
@@ -54,7 +72,7 @@ class ViewUsersPageState extends State<ViewUsersPage> {
         for (var studentDoc in studentsSnapshot.docs) {
           result['students']!.add({
             'id': studentDoc.id,
-            'classId': classId, // Store classId for fetching later
+            'classId': classId, // Store classId for filtering
             'username': studentDoc['username'],
             'name': studentDoc['name'],
             'role': 'Student',
@@ -96,7 +114,6 @@ class ViewUsersPageState extends State<ViewUsersPage> {
                 leading: const Icon(Icons.person),
                 subtitle: Text('Username: ${item['username']}'),
                 title: Text('Name: ${item['name']}'),
-                // trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -119,7 +136,11 @@ class ViewUsersPageState extends State<ViewUsersPage> {
 
   List<Map<String, dynamic>> _filterItems(List<Map<String, dynamic>> items) {
     return items.where((item) {
-      return item['username'].toLowerCase().contains(searchQuery.toLowerCase());
+      final matchesSearch =
+          item['username'].toLowerCase().contains(searchQuery.toLowerCase());
+      final matchesClass =
+          selectedClass == 'All' || item['classId'] == selectedClass;
+      return matchesSearch && matchesClass;
     }).toList();
   }
 
@@ -141,7 +162,10 @@ class ViewUsersPageState extends State<ViewUsersPage> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const AdminHomePage()),
+              MaterialPageRoute(
+                  builder: (context) => AdminHomePage(
+                        adminId: widget.adminId,
+                      )),
             );
           },
           icon: const Icon(Icons.arrow_back),
@@ -190,6 +214,35 @@ class ViewUsersPageState extends State<ViewUsersPage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  if (!showTeachers)
+                    SizedBox(
+                      height: 40,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: classFilters.map((className) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: ChoiceChip(
+                              label: Text(className),
+                              selected: selectedClass == className,
+                              onSelected: (bool selected) {
+                                setState(() {
+                                  selectedClass = selected ? className : 'All';
+                                });
+                              },
+                              selectedColor: Colors.deepPurple,
+                              backgroundColor: Colors.grey[300],
+                              labelStyle: TextStyle(
+                                color: selectedClass == className
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   Expanded(
                     child: ListView(

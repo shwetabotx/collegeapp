@@ -313,6 +313,24 @@ class CommentSectionState extends State<CommentSection> {
     }
   }
 
+  // Function to delete a comment
+  Future<void> _deleteComment(String commentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('studentposts')
+          .doc(widget.postId)
+          .collection('comments')
+          .doc(commentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Comment deleted successfully!")),
+      );
+    } catch (e) {
+      print("Error deleting comment: $e");
+    }
+  }
+
   Future<String> _fetchStudentName(String studentId, String classId) async {
     try {
       DocumentSnapshot studentDoc = await FirebaseFirestore.instance
@@ -326,9 +344,9 @@ class CommentSectionState extends State<CommentSection> {
         return studentDoc['name'] ?? "Unknown Student";
       }
     } catch (e) {
-      print("Error fetching teacher name: $e");
+      print("Error fetching tudent name: $e");
     }
-    return "Unknown Teacher";
+    return "Unknown Student";
   }
 
   @override
@@ -349,27 +367,45 @@ class CommentSectionState extends State<CommentSection> {
 
             return Column(
               children: snapshot.data!.docs.map((doc) {
+                bool isOwner = doc['studentId'] ==
+                    widget
+                        .studentId; // Check if the current student is the comment owner
                 return FutureBuilder<String>(
                   future: _fetchStudentName(doc['studentId'], doc['classId']),
-                  builder: (context, studentSnapshot) {
-                    return ListTile(
-                      title: Text(studentSnapshot.data ?? "Unknown Student"),
-                      subtitle: Text(doc['comment']),
-                      trailing: doc['studentId'] ==
-                              widget
-                                  .studentId // Show delete button only for the comment owner
-                          ? IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () async {
-                                await FirebaseFirestore.instance
-                                    .collection('studentposts')
-                                    .doc(widget.postId)
-                                    .collection('comments')
-                                    .doc(doc.id)
-                                    .delete();
-                              },
-                            )
-                          : null,
+                  builder: (context, teacherSnapshot) {
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 8),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    teacherSnapshot.data ?? "Unknown Student",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(doc['comment']),
+                                ],
+                              ),
+                            ),
+                            if (isOwner) // Show the delete button only if the current teacher is the one who posted
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteComment(doc.id),
+                              ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );

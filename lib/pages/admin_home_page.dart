@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
+import 'package:collegeapp/pages/admin/student_promotion_page.dart';
 import 'package:collegeapp/pages/admin_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/login_page.dart';
@@ -81,90 +82,148 @@ class AdminHomePageState extends State<AdminHomePage> {
 
   /// Handles Excel file upload and uploads data to Firestore
   Future<void> _uploadExcelToFirestore(BuildContext context) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['xlsx'],
+    bool confirmUpload = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Confirm Upload"),
+          content:
+              const Text("Are you sure you want to upload the Excel file?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false); // Cancel
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, true); // Proceed
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
     );
 
-    if (result != null) {
-      File file = File(result.files.single.path!);
-      var bytes = await file.readAsBytes();
-      var excel = Excel.decodeBytes(bytes);
+    if (confirmUpload) {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+      );
 
-      List<Map<String, String>> users = [];
+      if (result != null) {
+        File file = File(result.files.single.path!);
 
-      for (var table in excel.tables.keys) {
-        var sheet = excel.tables[table];
-        if (sheet != null) {
-          for (int i = 1; i < sheet.rows.length; i++) {
-            var row = sheet.rows[i];
+        // Show loading dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false, // Prevent user from closing it
+          builder: (context) {
+            return const AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text("Uploading Excel file..."),
+                ],
+              ),
+            );
+          },
+        );
 
-            if (row.length < 9) continue; // Skip invalid rows
+        try {
+          var bytes = await file.readAsBytes();
+          var excel = Excel.decodeBytes(bytes);
 
-            String classId = row[0]?.value.toString() ?? "";
-            String department = row[1]?.value.toString() ?? "";
-            String email = row[2]?.value.toString() ?? "";
-            String name = row[3]?.value.toString() ?? "";
-            String phone = row[5]?.value.toString() ?? "";
-            String role = row[7]?.value.toString() ?? "";
+          List<Map<String, String>> users = [];
 
-            // Generate random username and password
-            String generatedUsername =
-                name.split(' ')[0].toLowerCase() + generateRandomString(4);
-            String generatedPassword = generateRandomString(8);
+          for (var table in excel.tables.keys) {
+            var sheet = excel.tables[table];
+            if (sheet != null) {
+              for (int i = 1; i < sheet.rows.length; i++) {
+                var row = sheet.rows[i];
 
-            Map<String, dynamic> data = {
-              "classId": classId,
-              "department": department,
-              "email": email,
-              "name": name,
-              "password": generatedPassword,
-              "phone": phone,
-              "username": generatedUsername,
-              "role": role,
-            };
+                if (row.length < 9) continue; // Skip invalid rows
 
-            if (role == "Student" && row.length > 9) {
-              data["driverId"] = row[8]?.value.toString() ?? "";
-              data["rollNumber"] = row[9]?.value.toString() ?? "";
-              await FirebaseFirestore.instance
-                  .collection("classes")
-                  .doc(classId)
-                  .collection("students")
-                  .doc(generatedUsername)
-                  .set(data);
-            } else if (role == "Teacher" && row.length > 8) {
-              String teacherId = row[8]?.value.toString() ?? "";
-              data["teacherId"] = teacherId;
-              await FirebaseFirestore.instance
-                  .collection("classes")
-                  .doc(classId)
-                  .collection("teachers")
-                  .doc(generatedUsername)
-                  .set(data);
-            }
+                String classId = row[0]?.value.toString() ?? "";
+                String department = row[1]?.value.toString() ?? "";
+                String email = row[2]?.value.toString() ?? "";
+                String name = row[3]?.value.toString() ?? "";
+                String phone = row[5]?.value.toString() ?? "";
+                String role = row[7]?.value.toString() ?? "";
 
-            if (email.isNotEmpty) {
-              users.add({
-                "name": name,
-                "email": email,
-                "username": generatedUsername,
-                "password": generatedPassword,
-              });
+                // Generate random username and password
+                String generatedUsername =
+                    name.split(' ')[0].toLowerCase() + generateRandomString(4);
+                String generatedPassword = generateRandomString(8);
+
+                Map<String, dynamic> data = {
+                  "classId": classId,
+                  "department": department,
+                  "email": email,
+                  "name": name,
+                  "password": generatedPassword,
+                  "phone": phone,
+                  "username": generatedUsername,
+                  "role": role,
+                };
+
+                if (role == "Student" && row.length > 9) {
+                  data["driverId"] = row[8]?.value.toString() ?? "";
+                  data["rollNumber"] = row[9]?.value.toString() ?? "";
+                  await FirebaseFirestore.instance
+                      .collection("classes")
+                      .doc(classId)
+                      .collection("students")
+                      .doc(generatedUsername)
+                      .set(data);
+                } else if (role == "Teacher" && row.length > 8) {
+                  String teacherId = row[8]?.value.toString() ?? "";
+                  data["teacherId"] = teacherId;
+                  await FirebaseFirestore.instance
+                      .collection("classes")
+                      .doc(classId)
+                      .collection("teachers")
+                      .doc(generatedUsername)
+                      .set(data);
+                }
+
+                if (email.isNotEmpty) {
+                  users.add({
+                    "name": name,
+                    "email": email,
+                    "username": generatedUsername,
+                    "password": generatedPassword,
+                  });
+                }
+              }
             }
           }
+
+          Navigator.pop(context); // Close loading dialog
+
+          if (users.isNotEmpty) {
+            openBulkGmailApp(users);
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Excel data uploaded successfully!"),
+            ),
+          );
+        } catch (e) {
+          Navigator.pop(context); // Close loading dialog if an error occurs
+          print("Error uploading Excel file: $e");
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Failed to upload Excel file"),
+            ),
+          );
         }
       }
-
-      if (users.isNotEmpty) {
-        openBulkGmailApp(users);
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Excel data uploaded successfully!"),
-        ),
-      );
     }
   }
 
@@ -337,6 +396,20 @@ class AdminHomePageState extends State<AdminHomePage> {
                     icon: Icons.upload_file,
                     title: 'Upload Excel',
                     onTap: () => _uploadExcelToFirestore(context),
+                  ),
+                  _buildFeatureCard(
+                    icon: Icons.arrow_upward,
+                    title: 'Student Promotion',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => StudentPromotionPage(
+                            adminId: widget.adminId,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

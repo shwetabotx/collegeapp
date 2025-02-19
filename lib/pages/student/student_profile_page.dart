@@ -4,37 +4,42 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:collegeapp/pages/admin_home_page.dart';
+import 'package:collegeapp/pages/student/student_home_page.dart';
 
-class AdminProfilePage extends StatefulWidget {
-  final String adminId;
+class StudentProfilePage extends StatefulWidget {
+  final String classId;
+  final String studentId;
 
-  const AdminProfilePage({
+  const StudentProfilePage({
     super.key,
-    required this.adminId,
+    required this.classId,
+    required this.studentId,
+    required String driverId,
   });
 
   @override
   // ignore: library_private_types_in_public_api
-  _AdminProfilePageState createState() => _AdminProfilePageState();
+  _StudentProfilePageState createState() => _StudentProfilePageState();
 }
 
-class _AdminProfilePageState extends State<AdminProfilePage> {
+class _StudentProfilePageState extends State<StudentProfilePage> {
   String? _profileImageUrl;
   bool _isUploading = false;
 
-  /// Fetch admin profile data, including the profile picture URL
-  Future<void> _fetchAdminData() async {
-    DocumentSnapshot adminSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget.adminId)
+  /// Fetch student profile data, including the profile picture URL
+  Future<void> _fetchStudentData() async {
+    DocumentSnapshot studentSnapshot = await FirebaseFirestore.instance
+        .collection('classes')
+        .doc(widget.classId)
+        .collection('students')
+        .doc(widget.studentId)
         .get();
 
-    if (adminSnapshot.exists) {
+    if (studentSnapshot.exists) {
       setState(() {
-        _profileImageUrl = adminSnapshot.data() != null &&
-                (adminSnapshot.data() as Map).containsKey('profileImageUrl')
-            ? adminSnapshot['profileImageUrl']
+        _profileImageUrl = studentSnapshot.data() != null &&
+                (studentSnapshot.data() as Map).containsKey('profileImageUrl')
+            ? studentSnapshot['profileImageUrl']
             : null;
       });
     }
@@ -78,8 +83,10 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
     if (imageUrl != null) {
       await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.adminId)
+          .collection('classes')
+          .doc(widget.classId)
+          .collection('students')
+          .doc(widget.studentId)
           .update({'profileImageUrl': imageUrl});
 
       setState(() {
@@ -99,7 +106,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   @override
   void initState() {
     super.initState();
-    _fetchAdminData();
+    _fetchStudentData();
   }
 
   /// Converts dynamic field to a string with proper type handling
@@ -120,7 +127,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Admin Profile",
+          "Student Profile",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
@@ -130,8 +137,10 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => AdminHomePage(
-                  adminId: widget.adminId,
+                builder: (context) => StudentHomePage(
+                  classId: widget.classId,
+                  studentId: widget.studentId,
+                  driverId: '',
                 ),
               ),
             );
@@ -141,8 +150,10 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.adminId)
+            .collection('classes')
+            .doc(widget.classId)
+            .collection('students')
+            .doc(widget.studentId)
             .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -150,11 +161,11 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           }
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return const Center(
-              child: Text("Admin information not found."),
+              child: Text("Student information not found."),
             );
           }
 
-          final adminData = snapshot.data!;
+          final studentData = snapshot.data!;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -192,14 +203,14 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                convertToString(adminData['name']),
+                                convertToString(studentData['name']),
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                "Admin ID: ${convertToString(adminData['adminId'])}",
+                                "Roll No: ${convertToString(studentData['rollNumber'])}",
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey,
@@ -231,17 +242,22 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                         ProfileDetailRow(
                           icon: Icons.email,
                           label: "Email",
-                          value: convertToString(adminData['email']),
+                          value: convertToString(studentData['email']),
                         ),
                         ProfileDetailRow(
                           icon: Icons.phone,
                           label: "Phone",
-                          value: convertToString(adminData['phone']),
+                          value: convertToString(studentData['phone']),
                         ),
                         ProfileDetailRow(
                           icon: Icons.group,
                           label: "Role",
-                          value: convertToString(adminData['role']),
+                          value: convertToString(studentData['role']),
+                        ),
+                        ProfileDetailRow(
+                          icon: Icons.class_,
+                          label: "Class ID",
+                          value: widget.classId,
                         ),
                       ],
                     ),

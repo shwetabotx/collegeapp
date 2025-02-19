@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'student_home_page.dart';
-import 'teacher_home_page.dart';
-import 'admin_home_page.dart';
-import 'driver_home_page.dart'; // Import DriverHomePage
+import 'student/student_home_page.dart';
+import 'teacher/teacher_home_page.dart';
+import 'admin/admin_home_page.dart';
+import 'driver/driver_home_page.dart'; // Import DriverHomePage
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

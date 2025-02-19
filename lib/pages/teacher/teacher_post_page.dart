@@ -1,27 +1,27 @@
 // ignore_for_file: avoid_print
 import 'dart:convert';
 import 'dart:io';
-import 'package:collegeapp/pages/student_home_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 
-class StudentPostPage extends StatefulWidget {
-  final String studentId;
+class TeacherPostPage extends StatefulWidget {
+  final String teacherId;
   final String classId;
 
-  const StudentPostPage({
+  const TeacherPostPage({
     super.key,
-    required this.studentId,
+    required this.teacherId,
     required this.classId,
   });
 
   @override
-  StudentPostPageState createState() => StudentPostPageState();
+  TeacherPostPageState createState() => TeacherPostPageState();
 }
 
-class StudentPostPageState extends State<StudentPostPage> {
+class TeacherPostPageState extends State<TeacherPostPage> {
   final TextEditingController _postController = TextEditingController();
   File? _selectedFile;
   String? _fileName;
@@ -73,8 +73,8 @@ class StudentPostPageState extends State<StudentPostPage> {
     }
 
     try {
-      await FirebaseFirestore.instance.collection('studentposts').add({
-        'studentId': widget.studentId,
+      await FirebaseFirestore.instance.collection('posts').add({
+        'teacherId': widget.teacherId,
         'classId': widget.classId,
         'fileUrl': fileUrl ?? "",
         'fileName': _fileName ?? "",
@@ -104,21 +104,16 @@ class StudentPostPageState extends State<StudentPostPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Student Posts",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.deepPurple,
-        iconTheme: IconThemeData(color: Colors.white),
+        title: const Text("Teacher Posts"),
+        backgroundColor: Colors.green,
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => StudentHomePage(
-                  studentId: widget.studentId,
+                builder: (context) => TeacherHomePage(
+                  teacherId: widget.teacherId,
                   classId: widget.classId,
-                  driverId: '',
                 ),
               ),
             );
@@ -160,7 +155,7 @@ class StudentPostPageState extends State<StudentPostPage> {
           ),
           Expanded(
               child: PostsList(
-                  classId: widget.classId, studentId: widget.studentId)),
+                  classId: widget.classId, teacherId: widget.teacherId)),
         ],
       ),
     );
@@ -169,37 +164,61 @@ class StudentPostPageState extends State<StudentPostPage> {
 
 class PostsList extends StatelessWidget {
   final String classId;
-  final String studentId;
+  final String teacherId;
 
   const PostsList({
     super.key,
     required this.classId,
-    required this.studentId,
+    required this.teacherId,
   });
 
-  Future<String> _fetchStudentName(String studentId, String classId) async {
+  Future<String> _fetchTeacherName(String teacherId, String classId) async {
     try {
-      DocumentSnapshot studentDoc = await FirebaseFirestore.instance
+      DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
           .collection('classes')
           .doc(classId)
-          .collection('students')
-          .doc(studentId)
+          .collection('teachers')
+          .doc(teacherId)
           .get();
 
-      if (studentDoc.exists) {
-        return studentDoc['name'] ?? "Unknown Student";
+      if (teacherDoc.exists) {
+        return teacherDoc['name'] ?? "Unknown Teacher";
       }
     } catch (e) {
-      print("Error fetching student name: $e");
+      print("Error fetching teacher name: $e");
     }
-    return "Unknown Student";
+    return "Unknown Teacher";
+  }
+
+  Future<void> _deletePost(String postId, BuildContext context) async {
+    try {
+      // Delete the post
+      await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
+
+      // Optionally, delete all comments associated with this post
+      var comments = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .collection('comments')
+          .get();
+
+      for (var comment in comments.docs) {
+        await comment.reference.delete();
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Post deleted successfully!")),
+      );
+    } catch (e) {
+      print("Error deleting post: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: FirebaseFirestore.instance
-          .collection('studentposts')
+          .collection('posts')
           .orderBy('timestamp', descending: true)
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -210,7 +229,7 @@ class PostsList extends StatelessWidget {
         return ListView(
           children: snapshot.data!.docs.map((doc) {
             return FutureBuilder<String>(
-              future: _fetchStudentName(doc['studentId'], doc['classId']),
+              future: _fetchTeacherName(doc['teacherId'], doc['classId']),
               builder: (context, nameSnapshot) {
                 return Card(
                   margin: const EdgeInsets.all(8.0),
@@ -220,29 +239,12 @@ class PostsList extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              nameSnapshot.data ?? "Unknown Student",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (doc['studentId'] ==
-                                studentId) // Only show delete button for the post owner
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () async {
-                                  await FirebaseFirestore.instance
-                                      .collection('studentposts')
-                                      .doc(doc.id)
-                                      .delete();
-                                },
-                              ),
-                          ],
+                        Text(
+                          nameSnapshot.data ?? "Unknown Teacher",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 5),
                         Text(doc['content'],
@@ -254,11 +256,15 @@ class PostsList extends StatelessWidget {
                           ),
                         const SizedBox(height: 10),
                         CommentSection(
-                          postId: doc.id,
-                          studentId: studentId,
-                          classId: classId,
-                          teacherId: '',
-                        ),
+                            postId: doc.id,
+                            teacherId: teacherId,
+                            classId: classId),
+                        // Only show delete button if the current teacher is the one who posted
+                        if (doc['teacherId'] == teacherId)
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _deletePost(doc.id, context),
+                          ),
                       ],
                     ),
                   ),
@@ -274,15 +280,14 @@ class PostsList extends StatelessWidget {
 
 class CommentSection extends StatefulWidget {
   final String postId;
-  final String studentId;
+  final String teacherId;
   final String classId;
 
   const CommentSection({
     super.key,
     required this.postId,
-    required this.studentId,
+    required this.teacherId,
     required this.classId,
-    required String teacherId,
   });
 
   @override
@@ -292,16 +297,17 @@ class CommentSection extends StatefulWidget {
 class CommentSectionState extends State<CommentSection> {
   final TextEditingController _commentController = TextEditingController();
 
+  // Function to post a new comment
   Future<void> _postComment() async {
     if (_commentController.text.isEmpty) return;
 
     try {
       await FirebaseFirestore.instance
-          .collection('studentposts')
+          .collection('posts')
           .doc(widget.postId)
           .collection('comments')
           .add({
-        'studentId': widget.studentId,
+        'teacherId': widget.teacherId,
         'classId': widget.classId,
         'comment': _commentController.text,
         'timestamp': FieldValue.serverTimestamp(),
@@ -317,7 +323,7 @@ class CommentSectionState extends State<CommentSection> {
   Future<void> _deleteComment(String commentId) async {
     try {
       await FirebaseFirestore.instance
-          .collection('studentposts')
+          .collection('posts')
           .doc(widget.postId)
           .collection('comments')
           .doc(commentId)
@@ -331,22 +337,23 @@ class CommentSectionState extends State<CommentSection> {
     }
   }
 
-  Future<String> _fetchStudentName(String studentId, String classId) async {
+  // Function to fetch teacher's name for displaying in the comment
+  Future<String> _fetchTeacherName(String teacherId, String classId) async {
     try {
-      DocumentSnapshot studentDoc = await FirebaseFirestore.instance
+      DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
           .collection('classes')
           .doc(classId)
-          .collection('students')
-          .doc(studentId)
+          .collection('teachers')
+          .doc(teacherId)
           .get();
 
-      if (studentDoc.exists) {
-        return studentDoc['name'] ?? "Unknown Student";
+      if (teacherDoc.exists) {
+        return teacherDoc['name'] ?? "Unknown Teacher";
       }
     } catch (e) {
-      print("Error fetching tudent name: $e");
+      print("Error fetching teacher name: $e");
     }
-    return "Unknown Student";
+    return "Unknown Teacher";
   }
 
   @override
@@ -355,7 +362,7 @@ class CommentSectionState extends State<CommentSection> {
       children: [
         StreamBuilder(
           stream: FirebaseFirestore.instance
-              .collection('studentposts')
+              .collection('posts')
               .doc(widget.postId)
               .collection('comments')
               .orderBy('timestamp', descending: true)
@@ -367,11 +374,11 @@ class CommentSectionState extends State<CommentSection> {
 
             return Column(
               children: snapshot.data!.docs.map((doc) {
-                bool isOwner = doc['studentId'] ==
+                bool isOwner = doc['teacherId'] ==
                     widget
-                        .studentId; // Check if the current student is the comment owner
+                        .teacherId; // Check if the current teacher is the comment owner
                 return FutureBuilder<String>(
-                  future: _fetchStudentName(doc['studentId'], doc['classId']),
+                  future: _fetchTeacherName(doc['teacherId'], doc['classId']),
                   builder: (context, teacherSnapshot) {
                     return Card(
                       margin: const EdgeInsets.symmetric(
@@ -386,7 +393,7 @@ class CommentSectionState extends State<CommentSection> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    teacherSnapshot.data ?? "Unknown Student",
+                                    teacherSnapshot.data ?? "Unknown Teacher",
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,

@@ -1,4 +1,4 @@
-import 'package:collegeapp/pages/teacher_home_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'year_selection_page.dart';
 

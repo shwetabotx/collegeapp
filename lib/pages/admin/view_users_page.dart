@@ -1,6 +1,4 @@
-// ignore_for_file: avoid_print
-
-import 'package:collegeapp/pages/admin_home_page.dart';
+import 'package:collegeapp/pages/admin/admin_home_page.dart';
 import 'package:collegeapp/pages/admin/user_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -86,7 +84,7 @@ class ViewUsersPageState extends State<ViewUsersPage> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching data: $e');
+      debugPrint('Error fetching data: $e');
       setState(() {
         isLoading = false;
       });

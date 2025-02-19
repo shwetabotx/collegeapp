@@ -1,4 +1,4 @@
-import 'package:collegeapp/pages/teacher_home_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // Import for date formatting

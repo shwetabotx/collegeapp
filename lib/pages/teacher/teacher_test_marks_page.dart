@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:collegeapp/pages/teacher_home_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_home_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

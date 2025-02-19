@@ -1,17 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
-import 'package:collegeapp/pages/teacher_assignment_page.dart';
-import 'package:collegeapp/pages/teacher_homework_page.dart';
-import 'package:collegeapp/pages/teacher_manage_tasks_page.dart';
-import 'package:collegeapp/pages/teacher_post_page.dart';
-import 'package:collegeapp/pages/teacher_profile_page.dart';
-import 'package:collegeapp/pages/teacher_test_marks_page.dart';
-import 'package:collegeapp/pages/upload_resources_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_assignment_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_homework_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_manage_tasks_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_post_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_profile_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_test_marks_page.dart';
+import 'package:collegeapp/pages/teacher/upload_resources_page.dart';
 import 'package:flutter/material.dart';
-import 'package:collegeapp/pages/teacher_announcement_page.dart';
-import 'package:collegeapp/pages/teacher_time_table.dart';
+import 'package:collegeapp/pages/teacher/teacher_announcement_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_time_table.dart';
 import 'attendance/major_selection_page.dart';
-import 'login_page.dart';
+import '../login_page.dart';
 
 class TeacherHomePage extends StatelessWidget {
   final String teacherId;
@@ -50,6 +50,42 @@ class TeacherHomePage extends StatelessWidget {
       'department': 'Unknown Department',
       'profileImageUrl': 'lib/images/me2.png', // Default image
     };
+  }
+
+  // function to fetch the total number of students
+  Future<int> fetchTotalStudents() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(classId)
+          .collection('students')
+          .get();
+
+      return snapshot
+          .size; // Returns the number of documents (students) in the class
+    } catch (e) {
+      debugPrint('Error fetching total students: $e');
+      return 0; // Return 0 if an error occurs
+    }
+  }
+
+// function to fetch the number of pending tasks
+  Future<int> fetchPendingTasksCount() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(classId)
+          .collection('teachers')
+          .doc(teacherId)
+          .collection('tasks')
+          .where('completed', isEqualTo: false)
+          .get();
+
+      return snapshot.size; // Returns the number of pending tasks
+    } catch (e) {
+      debugPrint('Error fetching pending tasks: $e');
+      return 0; // Return 0 if an error occurs
+    }
   }
 
   @override
@@ -223,10 +259,41 @@ class TeacherHomePage extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildDashboardCard(
-                      "Total Students", "120", Icons.group, context),
-                  _buildDashboardCard(
-                      "Pending Tasks", "3", Icons.pending_actions, context),
+                  FutureBuilder<int>(
+                    future: fetchTotalStudents(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return _buildDashboardCard("Total Students",
+                            "Loading...", Icons.group, context);
+                      } else if (snapshot.hasError) {
+                        return _buildDashboardCard(
+                            "Total Students", "Error", Icons.group, context);
+                      } else {
+                        return _buildDashboardCard("Total Students",
+                            snapshot.data.toString(), Icons.group, context);
+                      }
+                    },
+                  ),
+
+                  // to display pending tasks
+                  FutureBuilder<int>(
+                    future: fetchPendingTasksCount(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return _buildDashboardCard("Pending Tasks",
+                            "Loading...", Icons.pending_actions, context);
+                      } else if (snapshot.hasError) {
+                        return _buildDashboardCard("Pending Tasks", "Error",
+                            Icons.pending_actions, context);
+                      } else {
+                        return _buildDashboardCard(
+                            "Pending Tasks",
+                            snapshot.data.toString(),
+                            Icons.pending_actions,
+                            context);
+                      }
+                    },
+                  ),
                 ],
               ),
             ),

@@ -1,20 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'login_page.dart';
+import '../login_page.dart';
 //import 'razorpay_payment.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
-import 'package:collegeapp/pages/attendance_tracking_page.dart';
-import 'package:collegeapp/pages/driver_location_map_page.dart';
-import 'package:collegeapp/pages/student_internal_exam_results.dart';
-import 'package:collegeapp/pages/student_announcement_page.dart';
-import 'package:collegeapp/pages/student_assignment_page.dart';
-import 'package:collegeapp/pages/student_homework_page.dart';
-import 'package:collegeapp/pages/student_manage_tasks_page.dart';
-import 'package:collegeapp/pages/student_post_page.dart';
-import 'package:collegeapp/pages/student_profile_page.dart';
-import 'package:collegeapp/pages/student_timetable_page.dart';
-import 'package:collegeapp/pages/sudent_links_page.dart';
-import 'package:collegeapp/pages/view_resources_page.dart';
+import 'package:collegeapp/pages/student/student_attendance_page.dart';
+import 'package:collegeapp/pages/driver/driver_location_map_page.dart';
+import 'package:collegeapp/pages/student/student_internal_exam_results.dart';
+import 'package:collegeapp/pages/student/student_announcement_page.dart';
+import 'package:collegeapp/pages/student/student_assignment_page.dart';
+import 'package:collegeapp/pages/student/student_homework_page.dart';
+import 'package:collegeapp/pages/student/student_manage_tasks_page.dart';
+import 'package:collegeapp/pages/student/student_post_page.dart';
+import 'package:collegeapp/pages/student/student_profile_page.dart';
+import 'package:collegeapp/pages/student/student_timetable_page.dart';
+import 'package:collegeapp/pages/student/student_links_page.dart';
+import 'package:collegeapp/pages/student/view_resources_page.dart';
 
 class StudentHomePage extends StatefulWidget {
   final String classId;

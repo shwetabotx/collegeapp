@@ -1,4 +1,4 @@
-import 'package:collegeapp/pages/student_home_page.dart';
+import 'package:collegeapp/pages/student/student_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';

@@ -3,7 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/admin/student_promotion_page.dart';
-import 'package:collegeapp/pages/admin_profile_page.dart';
+import 'package:collegeapp/pages/admin/admin_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:collegeapp/pages/login_page.dart';
 import 'package:collegeapp/pages/admin/add_delete.dart';

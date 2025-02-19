@@ -1,13 +1,12 @@
-import 'package:collegeapp/pages/student_home_page.dart';
+import 'package:collegeapp/pages/student/student_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
 
-class StudentAssignmentPage extends StatelessWidget {
+class StudentHomeworkPage extends StatelessWidget {
   final String classId;
   final String studentId;
 
-  const StudentAssignmentPage({
+  const StudentHomeworkPage({
     super.key,
     required this.classId,
     required this.studentId,
@@ -18,7 +17,7 @@ class StudentAssignmentPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Student Assignments",
+          "Student Homework",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
@@ -43,7 +42,7 @@ class StudentAssignmentPage extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('classes')
             .doc(classId)
-            .collection('assignments')
+            .collection('homework')
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -51,37 +50,29 @@ class StudentAssignmentPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No assignments available."));
+            return const Center(child: Text("No homework available."));
           }
           return ListView.builder(
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              final assignment =
-                  snapshot.data!.docs[index].data() as Map<String, dynamic>?;
+              final homework = snapshot.data!.docs[index];
+              String dueDateFormatted = "No due date";
 
-              // Ensure assignment is not null
-              if (assignment == null) {
-                return const SizedBox(); // Skip this entry if it's null
-              }
-
-              String title = assignment['title'] ?? "No Title";
-              String description =
-                  assignment['description'] ?? "No Description";
-
-              // Safely handle the dueDate field
-              String formattedDueDate = "No due date";
-              if (assignment.containsKey('dueDate') &&
-                  assignment['dueDate'] is Timestamp) {
-                Timestamp dueDateTimestamp = assignment['dueDate'];
-                formattedDueDate =
-                    DateFormat('yyyy-MM-dd').format(dueDateTimestamp.toDate());
+              if (homework['dueDate'] != null) {
+                try {
+                  DateTime dueDate = DateTime.parse(homework['dueDate']);
+                  dueDateFormatted =
+                      "${dueDate.year}-${dueDate.month}-${dueDate.day}";
+                } catch (e) {
+                  dueDateFormatted = "Invalid date";
+                }
               }
 
               return Card(
                 child: ListTile(
-                  title: Text(title),
+                  title: Text(homework['title']),
                   subtitle: Text(
-                    "$description\nDue: $formattedDueDate",
+                    "${homework['description']}\nDue: $dueDateFormatted",
                   ),
                 ),
               );

@@ -1,22 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collegeapp/pages/student_home_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_home_page.dart';
 import 'package:flutter/material.dart';
 
-class StudentManageTasksPage extends StatefulWidget {
-  final String studentId;
+class TeacherManageTasksPage extends StatefulWidget {
+  final String teacherId;
   final String classId;
 
-  const StudentManageTasksPage({
+  const TeacherManageTasksPage({
     super.key,
-    required this.studentId,
+    required this.teacherId,
     required this.classId,
   });
 
   @override
-  StudentManageTasksPageState createState() => StudentManageTasksPageState();
+  TeacherManageTasksPageState createState() => TeacherManageTasksPageState();
 }
 
-class StudentManageTasksPageState extends State<StudentManageTasksPage> {
+class TeacherManageTasksPageState extends State<TeacherManageTasksPage> {
   final TextEditingController _taskTitleController = TextEditingController();
   final TextEditingController _taskDescController = TextEditingController();
 
@@ -25,8 +25,8 @@ class StudentManageTasksPageState extends State<StudentManageTasksPage> {
       await FirebaseFirestore.instance
           .collection('classes')
           .doc(widget.classId)
-          .collection('students')
-          .doc(widget.studentId)
+          .collection('teachers')
+          .doc(widget.teacherId)
           .collection('tasks')
           .add({
         'title': _taskTitleController.text,
@@ -44,8 +44,8 @@ class StudentManageTasksPageState extends State<StudentManageTasksPage> {
     await FirebaseFirestore.instance
         .collection('classes')
         .doc(widget.classId)
-        .collection('students')
-        .doc(widget.studentId)
+        .collection('teachers')
+        .doc(widget.teacherId)
         .collection('tasks')
         .doc(taskId)
         .delete();
@@ -55,8 +55,8 @@ class StudentManageTasksPageState extends State<StudentManageTasksPage> {
     await FirebaseFirestore.instance
         .collection('classes')
         .doc(widget.classId)
-        .collection('students')
-        .doc(widget.studentId)
+        .collection('teachers')
+        .doc(widget.teacherId)
         .collection('tasks')
         .doc(taskId)
         .update({'completed': !currentStatus});
@@ -66,22 +66,16 @@ class StudentManageTasksPageState extends State<StudentManageTasksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Manage Tasks",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.deepPurple,
-        centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white),
+        title: const Text("Manage Tasks"),
+        backgroundColor: Colors.green,
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => StudentHomePage(
+                builder: (context) => TeacherHomePage(
+                  teacherId: widget.teacherId,
                   classId: widget.classId,
-                  studentId: widget.studentId,
-                  driverId: '',
                 ),
               ),
             );
@@ -118,8 +112,8 @@ class StudentManageTasksPageState extends State<StudentManageTasksPage> {
                 stream: FirebaseFirestore.instance
                     .collection('classes')
                     .doc(widget.classId)
-                    .collection('students')
-                    .doc(widget.studentId)
+                    .collection('teachers')
+                    .doc(widget.teacherId)
                     .collection('tasks')
                     .orderBy('timestamp', descending: true)
                     .snapshots(),

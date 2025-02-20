@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
+import 'package:collegeapp/pages/forgot_password_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'student/student_home_page.dart';
@@ -270,11 +271,20 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(
-                    'Forgot your password?',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      decoration: TextDecoration.underline,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ForgotPasswordPage()),
+                      );
+                    },
+                    child: Text(
+                      'Forgot your password?',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 50),

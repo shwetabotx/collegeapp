@@ -46,7 +46,7 @@ class _StudentPromotionPageState extends State<StudentPromotionPage> {
     try {
       WriteBatch batch = _firestore.batch();
 
-      // Define academic years for BA, BCOM, and BS
+      // Defining academic years for BA, BCOM, and BS
       Map<String, List<String>> streams = {
         "BA": ["FYBA", "SYBA", "TYBA", "LYBA"],
         "BCOM": ["FYBCOM", "SYBCOM", "TYBCOM", "LYBCOM"],
@@ -71,13 +71,20 @@ class _StudentPromotionPageState extends State<StudentPromotionPage> {
             if (nextYear == "GRADUATED") {
               batch.delete(doc.reference); // Remove final-year students
             } else {
+              // Ensure doc.data() is not null before spreading it
+              Map<String, dynamic> updatedData = {
+                if (doc.data() != null) ...doc.data() as Map<String, dynamic>,
+                "classId": nextYear, // Update classId
+              };
+
               DocumentReference newRef = _firestore
                   .collection('classes')
                   .doc(nextYear)
                   .collection('students')
                   .doc(doc.id);
 
-              batch.set(newRef, doc.data()); // Move student to next year
+              batch.set(
+                  newRef, updatedData); // Move student with updated classId
               batch.delete(doc.reference); // Remove from old year
             }
           }

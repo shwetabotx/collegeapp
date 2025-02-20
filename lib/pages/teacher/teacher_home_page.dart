@@ -359,10 +359,6 @@ class TeacherHomePage extends StatelessWidget {
   Widget _buildDashboardCard(
       String title, String value, IconData icon, BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Tapped on $title')));
-      },
       child: Card(
         color: Colors.green.shade100,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

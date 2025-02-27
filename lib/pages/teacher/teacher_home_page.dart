@@ -5,6 +5,7 @@ import 'package:collegeapp/pages/teacher/teacher_homework_page.dart';
 import 'package:collegeapp/pages/teacher/teacher_manage_tasks_page.dart';
 import 'package:collegeapp/pages/teacher/teacher_post_page.dart';
 import 'package:collegeapp/pages/teacher/teacher_profile_page.dart';
+import 'package:collegeapp/pages/teacher/teacher_settings_page.dart';
 import 'package:collegeapp/pages/teacher/teacher_test_marks_page.dart';
 import 'package:collegeapp/pages/teacher/upload_resources_page.dart';
 import 'package:flutter/material.dart';
@@ -107,7 +108,16 @@ class TeacherHomePage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Navigate to settings page
+              // Navigate to Teachers Setting Page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TeacherSettingsPage(
+                    classId: classId,
+                    teacherId: teacherId,
+                  ),
+                ),
+              );
             },
           ),
         ],

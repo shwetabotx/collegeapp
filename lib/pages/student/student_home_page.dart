@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collegeapp/pages/razorpay_payment.dart';
+import 'package:collegeapp/pages/student/student_settings_page.dart';
 import 'package:flutter/material.dart';
 import '../login_page.dart';
-//import 'razorpay_payment.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
 import 'package:collegeapp/pages/student/student_attendance_page.dart';
 import 'package:collegeapp/pages/driver/driver_location_map_page.dart';
@@ -151,7 +152,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
               leading: const Icon(Icons.settings),
               title: const Text("Settings"),
               onTap: () {
-                // Navigate to Settings Page
+                // Navigate to About Us Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => StudentSettingsPage(
+                      classId: widget.classId,
+                      studentId: widget.studentId,
+                    ),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -368,13 +378,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 icon: Icons.currency_rupee,
                 color: Colors.deepPurple.shade400,
                 onTap: () {
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => RazorpayPage(
-                  //           classId: widget.classId, studentId: widget.studentId),
-                  //     ),
-                  //   );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RazorpayPage(
+                          classId: widget.classId, studentId: widget.studentId),
+                    ),
+                  );
                 },
               ),
               _buildFeatureTile(

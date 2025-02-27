@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collegeapp/pages/about_developers_page.dart';
+import 'package:collegeapp/pages/admin/admin_settings_page.dart';
 import 'package:collegeapp/pages/admin/student_promotion_page.dart';
 import 'package:collegeapp/pages/admin/admin_profile_page.dart';
 import 'package:flutter/material.dart';
@@ -310,7 +311,17 @@ class AdminHomePageState extends State<AdminHomePage> {
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text("Settings"),
-              onTap: () {},
+              onTap: () {
+                // Navigate to Teachers Setting Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AdminSettingsPage(
+                      adminId: widget.adminId,
+                    ),
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.logout),
